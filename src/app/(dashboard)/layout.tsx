@@ -8,6 +8,7 @@ import Sidebar from "./_sidebar/sidebar";
 import Navbar from "./_navbar/navbar";
 import { getServerAuthSession } from "@/server/auth";
 import AuthSessionProvider from "../../components/providers/session-provider";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -34,6 +35,7 @@ export default async function RootLayout({
               <Navbar />
               {children}
             </div>
+            <Toaster />
           </TRPCReactProvider>
         </AuthSessionProvider>
       </body>
