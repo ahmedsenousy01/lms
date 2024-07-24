@@ -115,6 +115,7 @@ export const coursesRelations = relations(courses, ({ one, many }) => ({
     references: [categories.id],
   }),
   attachments: many(attachments),
+  chapters: many(chapters),
 }));
 
 export const categories = createTable(
@@ -171,3 +172,129 @@ export const attachmentsRelations = relations(attachments, ({ one }) => ({
     references: [courses.id],
   }),
 }));
+
+export const chapters = createTable(
+  "chapter",
+  {
+    id: varchar("id", { length: 255 })
+      .notNull()
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    title: varchar("title", { length: 255 }).notNull(),
+    description: text("description"),
+    videoUrl: varchar("video_url", { length: 255 }),
+    position: integer("position"),
+    isPublished: boolean("is_published").default(false),
+    isFree: boolean("is_free").default(false),
+    courseId: varchar("course_id", { length: 255 })
+      .notNull()
+      .references(() => courses.id),
+    muxAssetId: varchar("asset_id", { length: 255 }),
+    muxPlaybackId: varchar("playback_id", { length: 255 }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+      () => new Date()
+    ),
+  },
+  chapter => ({
+    titleIndex: index("chapter_title_idx").on(chapter.title),
+    courseIdIdx: index("chapter_course_id_idx").on(chapter.courseId),
+  })
+);
+
+export const chaptersRelations = relations(chapters, ({ one }) => ({
+  course: one(courses, {
+    fields: [chapters.courseId],
+    references: [courses.id],
+  }),
+}));
+
+export const userProgress = createTable("user_progress", {
+  id: varchar("id", { length: 255 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: varchar("user_id", { length: 255 })
+    .notNull()
+    .references(() => users.id),
+  chapterId: varchar("chapter_id", { length: 255 })
+    .notNull()
+    .references(() => chapters.id),
+  isCompleted: boolean("is_completed").default(false),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+    () => new Date()
+  ),
+});
+
+export const userProgressRelations = relations(userProgress, ({ one }) => ({
+  user: one(users, {
+    fields: [userProgress.userId],
+    references: [users.id],
+  }),
+  chapter: one(chapters, {
+    fields: [userProgress.chapterId],
+    references: [chapters.id],
+  }),
+}));
+
+export const purchases = createTable("purchase", {
+  id: varchar("id", { length: 255 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: varchar("user_id", { length: 255 })
+    .notNull()
+    .references(() => users.id),
+  courseId: varchar("course_id", { length: 255 })
+    .notNull()
+    .references(() => courses.id),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+    () => new Date()
+  ),
+});
+
+export const purchasesRelations = relations(purchases, ({ one }) => ({
+  user: one(users, {
+    fields: [purchases.userId],
+    references: [users.id],
+  }),
+  course: one(courses, {
+    fields: [purchases.courseId],
+    references: [courses.id],
+  }),
+}));
+
+export const stripeCustomers = createTable("stripe_customer", {
+  id: varchar("id", { length: 255 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: varchar("user_id", { length: 255 })
+    .notNull()
+    .references(() => users.id),
+  stripeCustomerId: varchar("customer_id", { length: 255 }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+    () => new Date()
+  ),
+});
+
+export const stripeCustomersRelations = relations(
+  stripeCustomers,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [stripeCustomers.userId],
+      references: [users.id],
+    }),
+  })
+);
