@@ -1,48 +1,43 @@
 import { NextResponse } from "next/server";
-import { withAuth } from "next-auth/middleware";
 
+import { auth } from "@/server/auth";
 import {
   apiAuthPrefix,
   authRoutes,
-  publicRoutes,
   DEFAULT_REDIRECT_ROUTE,
+  publicRoutes,
 } from "@/server/auth/routes";
 
-export default withAuth(
-  req => {
-    const { nextUrl } = req;
-    const isLoggedIn = !!req.nextauth.token;
+export default auth(req => {
+  const { pathname } = req.nextUrl;
+  const isLoggedIn = !!req.auth;
 
-    const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
-    const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
-    const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+  const isApiAuthRoute = pathname.startsWith(apiAuthPrefix);
+  const isPublicRoute = publicRoutes.includes(pathname);
+  const isAuthRoute = authRoutes.includes(pathname);
 
-    if (isApiAuthRoute) return NextResponse.next();
+  if (isApiAuthRoute) return NextResponse.next();
 
-    if (isAuthRoute) {
-      if (isLoggedIn) {
-        return NextResponse.redirect(new URL(DEFAULT_REDIRECT_ROUTE, nextUrl));
-      }
-      return NextResponse.next();
-    }
-
-    if (!isLoggedIn && !isPublicRoute) {
+  if (isAuthRoute) {
+    if (isLoggedIn) {
       return NextResponse.redirect(
-        new URL(
-          `/auth/login?callbackUrl=${nextUrl.pathname ?? DEFAULT_REDIRECT_ROUTE}`,
-          nextUrl
-        )
+        new URL(DEFAULT_REDIRECT_ROUTE, req.nextUrl)
       );
     }
-
     return NextResponse.next();
-  },
-  {
-    callbacks: {
-      authorized: ({ token }) => !!token, // This will authorize if a token exists
-    },
   }
-);
+
+  if (!isLoggedIn && !isPublicRoute) {
+    return NextResponse.redirect(
+      new URL(
+        `/auth/login?callbackUrl=${pathname ?? DEFAULT_REDIRECT_ROUTE}`,
+        req.nextUrl
+      )
+    );
+  }
+
+  return NextResponse.next();
+});
 
 export const config = {
   matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],

@@ -1,6 +1,9 @@
-/** @type {import('prettier').Config & import('prettier-plugin-tailwindcss').PluginOptions} */
+/** @type {import('prettier').Config & import('prettier-plugin-tailwindcss').PluginOptions & import('@trivago/prettier-plugin-sort-imports').PrettierConfig}} */
 const config = {
-  plugins: ["prettier-plugin-tailwindcss"],
+  plugins: [
+    "@trivago/prettier-plugin-sort-imports",
+    "prettier-plugin-tailwindcss",
+  ],
   printWidth: 80,
   tabWidth: 2,
   useTabs: false,
@@ -13,6 +16,20 @@ const config = {
   jsxBracketSameLine: false,
   arrowParens: "avoid",
   proseWrap: "always",
+  importOrder: [
+    "^server-only$",
+    "^react$", // React itself
+    "next",
+    "<THIRD_PARTY_MODULES>", // node_modules
+    "^@/(app|components)/*.*$", // React Components
+    "^@/(server|trpc)/*.*$", // React Components
+    "^@/(constants|data|hooks|util|utils|lib)/.*$", // Various helpers
+    "^(\\.|\\.\\.)/(.(?!.(css|scss)))*$", // Any local imports that AREN'T styles.
+    "^@/styles/*.(css|scss)$", // Styles
+  ],
+  importOrderSeparation: true,
+  importOrderSortSpecifiers: true,
+  importOrderCaseInsensitive: true,
 };
 
 export default config;

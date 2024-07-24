@@ -1,44 +1,53 @@
 "use client";
 
-import z from "zod";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import z from "zod";
 
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormLabel,
   FormDescription,
   FormField,
-  FormMessage,
   FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+
+import { useCreateCourse } from "./use-create-course";
 
 const schema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
 });
 
 export default function CreateCoursePage() {
+  const { mutateAsync: createCourse, isPending } = useCreateCourse();
   const { toast } = useToast();
   const router = useRouter();
+
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
       title: "",
     },
   });
-
   const { isSubmitting, isValid } = form.formState;
 
-  function handleSubmit(values: z.infer<typeof schema>) {
-    // TODO: Create course mutation
+  async function handleSubmit(values: z.infer<typeof schema>) {
     try {
-      throw new Error("Not implemented");
+      const course = await createCourse(values);
+      toast({
+        title: "Course created",
+        description: "You can now start adding lessons",
+        variant: "success",
+      });
+      router.push(`/teacher/courses/${course.id}`);
     } catch (error) {
       toast({
         title: "Error creating course",
@@ -46,10 +55,6 @@ export default function CreateCoursePage() {
         variant: "destructive",
       });
     }
-
-    console.log(values);
-    // const courseId = 1;
-    // router.push(`/teacher/course/${courseId}`);
   }
 
   return (
@@ -73,7 +78,7 @@ export default function CreateCoursePage() {
                   <FormLabel>Course title</FormLabel>
                   <FormControl>
                     <Input
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || isPending}
                       placeholder="e.g. 'Introduction to Web Development'"
                       {...field}
                     />
@@ -88,6 +93,7 @@ export default function CreateCoursePage() {
             <div className="flex items-center gap-x-2">
               <Link href="/">
                 <Button
+                  disabled={isPending}
                   type="button"
                   variant="ghost"
                 >
@@ -95,7 +101,7 @@ export default function CreateCoursePage() {
                 </Button>
               </Link>
               <Button
-                disabled={!isValid || isSubmitting}
+                disabled={!isValid || isSubmitting || isPending}
                 type="submit"
               >
                 Continue

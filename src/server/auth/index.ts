@@ -1,22 +1,18 @@
-import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import {
-  getServerSession,
-  type DefaultSession,
-  type NextAuthOptions,
-} from "next-auth";
+import NextAuth, { type DefaultSession } from "next-auth";
 import { type Adapter } from "next-auth/adapters";
+import Credentials from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
+import { useSession } from "next-auth/react";
 
 import { env } from "@/env";
+import { loginSchema } from "@/schema/auth";
+import { DrizzleAdapter } from "@auth/drizzle-adapter";
+import bcrypt from "bcryptjs";
+import { eq } from "drizzle-orm";
+
 import { db } from "@/server/db";
 import { accounts, users } from "@/server/db/schema";
 
-/**
- * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
- * object and keep type safety.
- *
- * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
- */
 declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
@@ -32,12 +28,7 @@ declare module "next-auth" {
   // }
 }
 
-/**
- * Options for NextAuth.js used to configure adapters, providers, callbacks, etc.
- *
- * @see https://next-auth.js.org/configuration/options
- */
-export const authOptions: NextAuthOptions = {
+export const { auth, handlers, signIn, signOut } = NextAuth({
   callbacks: {
     session: ({ session, token }) => ({
       ...session,
@@ -52,29 +43,47 @@ export const authOptions: NextAuthOptions = {
     accountsTable: accounts,
   }) as Adapter,
   providers: [
+    Credentials({
+      async authorize(credentials) {
+        const validatedFields = loginSchema.safeParse(credentials);
+        if (!validatedFields.success) return null;
+
+        const { email, password } = validatedFields.data;
+
+        const [user] = await db
+          .select()
+          .from(users)
+          .where(eq(users.email, email))
+          .limit(1);
+        if (!user?.password) return null;
+
+        const passwordMatches = await bcrypt.compare(password, user.password);
+
+        if (passwordMatches) return user;
+
+        return null;
+      },
+    }),
     GoogleProvider({
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
       allowDangerousEmailAccountLinking: true,
     }),
-    /**
-     * ...add more providers here.
-     *
-     * Most other providers require a bit more work than the Discord provider. For example, the
-     * GitHub provider requires you to add the `refresh_token_expires_in` field to the Account
-     * model. Refer to the NextAuth.js docs for the provider you want to use. Example:
-     *
-     * @see https://next-auth.js.org/providers/github
-     */
   ],
   session: {
     strategy: "jwt",
   },
+  pages: {
+    signIn: "/auth/login",
+  },
+});
+
+export const getCurrentUser = async () => {
+  const session = await auth();
+  return session?.user;
 };
 
-/**
- * Wrapper for `getServerSession` so that you don't need to import the `authOptions` in every file.
- *
- * @see https://next-auth.js.org/configuration/nextjs
- */
-export const getServerAuthSession = () => getServerSession(authOptions);
+export function useCurrentUser() {
+  const { data: session } = useSession();
+  return session?.user;
+}

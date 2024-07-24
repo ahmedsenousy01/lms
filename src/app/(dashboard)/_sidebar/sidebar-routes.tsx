@@ -1,7 +1,10 @@
 "use client";
-import { BarChart, Compass, Layout, List } from "lucide-react";
-import SidebarItem from "./sidebar-item";
+
 import { usePathname } from "next/navigation";
+
+import { BarChart, Compass, Layout, List } from "lucide-react";
+
+import SidebarItem from "./sidebar-item";
 
 const GuestRoutes = [
   {

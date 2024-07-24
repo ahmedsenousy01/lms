@@ -1,14 +1,16 @@
-import "@/styles/globals.css";
-
-import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
-import { TRPCReactProvider } from "@/trpc/react";
-import Sidebar from "./_sidebar/sidebar";
-import Navbar from "./_navbar/navbar";
-import { getServerAuthSession } from "@/server/auth";
-import AuthSessionProvider from "../../components/providers/session-provider";
+import "@/styles/globals.css";
+import { GeistSans } from "geist/font/sans";
+
+import AuthSessionProvider from "@/components/providers/session-provider";
 import { Toaster } from "@/components/ui/toaster";
+
+import { auth } from "@/server/auth";
+import { TRPCReactProvider } from "@/trpc/react";
+
+import Navbar from "./_navbar/navbar";
+import Sidebar from "./_sidebar/sidebar";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -19,25 +21,27 @@ export const metadata: Metadata = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const session = await getServerAuthSession();
+  const session = await auth();
   return (
     <html
       lang="en"
       className={`${GeistSans.variable}`}
     >
-      <body className="grid-cols-[auto,1fr] md:grid">
-        <AuthSessionProvider session={session}>
-          <TRPCReactProvider>
-            <aside className="hidden md:flex">
-              <Sidebar />
-            </aside>
-            <div className="grid h-full grid-rows-[auto,1fr]">
-              <Navbar />
-              {children}
-            </div>
-            <Toaster />
-          </TRPCReactProvider>
-        </AuthSessionProvider>
+      <body>
+        <main className="grid h-full md:grid-cols-[auto,1fr]">
+          <AuthSessionProvider session={session}>
+            <TRPCReactProvider>
+              <aside className="hidden h-full md:flex">
+                <Sidebar />
+              </aside>
+              <div className="grid h-full grid-rows-[auto,1fr]">
+                <Navbar />
+                {children}
+              </div>
+            </TRPCReactProvider>
+          </AuthSessionProvider>
+        </main>
+        <Toaster />
       </body>
     </html>
   );

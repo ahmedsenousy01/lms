@@ -1,16 +1,17 @@
+import { type AdapterAccount } from "next-auth/adapters";
+
 import { relations, sql } from "drizzle-orm";
 import {
+  boolean,
+  decimal,
   index,
   integer,
-  decimal,
-  boolean,
   pgTableCreator,
   primaryKey,
   text,
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
-import { type AdapterAccount } from "next-auth/adapters";
 
 /**
  * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
@@ -31,6 +32,7 @@ export const users = createTable("user", {
     mode: "date",
     withTimezone: true,
   }).default(sql`CURRENT_TIMESTAMP`),
+  password: varchar("password", { length: 255 }),
   image: varchar("image", { length: 255 }),
 });
 
@@ -87,8 +89,9 @@ export const courses = createTable(
     userId: varchar("user_id", { length: 255 })
       .notNull()
       .references(() => users.id),
-    categoryId: varchar("category_id", { length: 255 })
-      .references(() => categories.id),
+    categoryId: varchar("category_id", { length: 255 }).references(
+      () => categories.id
+    ),
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),

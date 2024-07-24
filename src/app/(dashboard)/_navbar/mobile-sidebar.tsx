@@ -1,14 +1,17 @@
 "use client";
 
+import { useRef } from "react";
+
 import { Menu } from "lucide-react";
+
 import {
   Sheet,
   SheetClose,
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+
 import Sidebar from "../_sidebar/sidebar";
-import { useRef } from "react";
 
 export default function MobileSidebar() {
   const ref = useRef<HTMLButtonElement>(null); // TODO: move this to a global store (context or zustand)
