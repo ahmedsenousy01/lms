@@ -34,9 +34,9 @@ export default async function RootLayout({
               <aside className="hidden h-full md:flex">
                 <Sidebar />
               </aside>
-              <div className="grid h-full grid-rows-[auto,1fr]">
+              <div className="grid h-screen grid-rows-[auto,1fr]">
                 <Navbar />
-                {children}
+                <div className="overflow-y-auto">{children}</div>
               </div>
             </TRPCReactProvider>
           </AuthSessionProvider>

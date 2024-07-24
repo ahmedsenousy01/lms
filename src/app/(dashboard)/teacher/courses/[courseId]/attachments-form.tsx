@@ -25,7 +25,7 @@ export default function AttachmentsForm({
   initialData: { id, courseAttachments },
 }: {
   initialData: InferSelectModel<typeof courses> & {
-    courseAttachments: (InferSelectModel<typeof attachments> | null)[];
+    courseAttachments: InferSelectModel<typeof attachments>[];
   };
 }) {
   console.log(courseAttachments);
@@ -110,20 +110,20 @@ export default function AttachmentsForm({
         </>
       ) : hasAttachments ? (
         <>
-          <div className="max-h-44 space-y-2 overflow-y-auto">
+          <div className="max-h-52 space-y-2 overflow-y-auto">
             {courseAttachments.map(attachment => (
               <div
                 key={attachment?.id}
                 className="flex w-full items-center rounded-md border border-sky-200 bg-sky-100 px-3 py-1 text-sky-700"
               >
                 <File className="mr-2 size-6" />
-                <p className="truncate">{attachment?.name}</p>
+                <p className="line-clamp-1">{attachment?.name}</p>
                 <Button
                   variant="ghost"
                   className="ml-auto px-2 py-1"
                   onClick={async () =>
                     await handleDelete({
-                      attachmentId: attachment!.id,
+                      attachmentId: attachment.id,
                     })
                   }
                 >
