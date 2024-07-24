@@ -23,7 +23,7 @@ import type { courses } from "@/server/db/schema";
 
 import { cn } from "@/lib/utils";
 
-import { useUpdateCourse } from "./use-update-course";
+import { useUpdateCourse } from "./queries/use-update-course";
 
 const schema = z.object({
   categoryId: z.string().min(1, { message: "Category is required" }),
@@ -122,7 +122,7 @@ export default function CategoryForm({
           <p
             className={cn(
               "mt-2 text-sm",
-              !categoryId && "italic text-slate-500"
+              !categoryId && !selectedOption && "italic text-slate-500"
             )}
           >
             {selectedOption?.label ?? "No category"}

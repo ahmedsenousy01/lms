@@ -14,7 +14,7 @@ import { toast } from "@/components/ui/use-toast";
 
 import type { courses } from "@/server/db/schema";
 
-import { useUpdateCourse } from "./use-update-course";
+import { useUpdateCourse } from "./queries/use-update-course";
 
 const schema = z.object({
   imageUrl: z.string().url().min(1, { message: "imageUrl is required" }),

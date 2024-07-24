@@ -23,7 +23,7 @@ import type { courses } from "@/server/db/schema";
 
 import { cn, formatPrice } from "@/lib/utils";
 
-import { useUpdateCourse } from "./use-update-course";
+import { useUpdateCourse } from "./queries/use-update-course";
 
 const schema = z.object({
   price: z.coerce.number(),
@@ -116,7 +116,12 @@ export default function PriceForm({
         </Form>
       ) : (
         <>
-          <p className={cn("mt-2 text-sm", !price && "italic text-slate-500")}>
+          <p
+            className={cn(
+              "mt-2 text-sm",
+              !price && !data?.price && "italic text-slate-500"
+            )}
+          >
             {data?.price
               ? formatPrice(data.price)
               : price

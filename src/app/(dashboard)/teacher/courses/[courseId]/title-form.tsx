@@ -21,7 +21,7 @@ import { toast } from "@/components/ui/use-toast";
 
 import type { courses } from "@/server/db/schema";
 
-import { useUpdateCourse } from "./use-update-course";
+import { useUpdateCourse } from "./queries/use-update-course";
 
 const schema = z.object({
   title: z.string().min(1, { message: "Title is required" }),

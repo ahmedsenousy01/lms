@@ -23,7 +23,7 @@ import type { courses } from "@/server/db/schema";
 
 import { cn } from "@/lib/utils";
 
-import { useUpdateCourse } from "./use-update-course";
+import { useUpdateCourse } from "./queries/use-update-course";
 
 const schema = z.object({
   description: z.string().min(1, { message: "Description is required" }),
@@ -117,7 +117,7 @@ export default function DescriptionForm({
           <p
             className={cn(
               "mt-2 text-sm",
-              !description && "italic text-slate-500"
+              !description && !data?.description && "italic text-slate-500"
             )}
           >
             {data?.description ?? description ?? "No description"}

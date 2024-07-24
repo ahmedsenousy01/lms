@@ -1,11 +1,17 @@
 import { redirect } from "next/navigation";
 
-import { CircleDollarSign, LayoutDashboard, ListChecks } from "lucide-react";
+import {
+  CircleDollarSign,
+  File,
+  LayoutDashboard,
+  ListChecks,
+} from "lucide-react";
 
 import { IconBadge } from "@/components/ui/icon-badge";
 
 import { api } from "@/trpc/server";
 
+import AttachmentsForm from "./attachments-form";
 import CategoryForm from "./category-form";
 import DescriptionForm from "./description-form";
 import PriceForm from "./price-form";
@@ -92,6 +98,16 @@ export default async function CoursesPage({
               <h2 className="text-xl">Sell your course</h2>
             </div>
             <PriceForm initialData={course} />
+          </div>
+          <div>
+            <div className="flex items-center gap-x-2">
+              <IconBadge
+                icon={File}
+                size="sm"
+              />
+              <h2 className="text-xl">Resources & Attachments</h2>
+            </div>
+            <AttachmentsForm initialData={course} />
           </div>
         </div>
       </div>
