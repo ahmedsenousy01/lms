@@ -65,6 +65,7 @@ export const courseRouter = createTRPCRouter({
         description: z.string().min(1).optional(),
         imageUrl: z.string().url().optional(),
         categoryId: z.string().optional(),
+        price: z.number().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -81,6 +82,7 @@ export const courseRouter = createTRPCRouter({
             description: input.description,
             imageUrl: input.imageUrl,
             categoryId: input.categoryId,
+            price: input.price,
           })
           .where(condition);
       } catch {

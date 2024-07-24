@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { LayoutDashboard } from "lucide-react";
+import { CircleDollarSign, LayoutDashboard, ListChecks } from "lucide-react";
 
 import { IconBadge } from "@/components/ui/icon-badge";
 
@@ -8,6 +8,7 @@ import { api } from "@/trpc/server";
 
 import CategoryForm from "./category-form";
 import DescriptionForm from "./description-form";
+import PriceForm from "./price-form";
 import ThumbnailForm from "./thumbnail-form";
 import TitleForm from "./title-form";
 
@@ -56,7 +57,6 @@ export default async function CoursesPage({
           <div className="flex items-center gap-x-2">
             <IconBadge
               icon={LayoutDashboard}
-              variant="success"
               size="sm"
             />
             <h2 className="text-xl">Customize your course</h2>
@@ -71,6 +71,28 @@ export default async function CoursesPage({
               value: category.id,
             }))}
           />
+        </div>
+        <div className="space-y-6">
+          <div>
+            <div className="flex items-center gap-x-2">
+              <IconBadge
+                icon={ListChecks}
+                size="sm"
+              />
+              <h2 className="text-xl">Course chapters</h2>
+            </div>
+            <div>TODO: Add chapters</div>
+          </div>
+          <div>
+            <div className="flex items-center gap-x-2">
+              <IconBadge
+                icon={CircleDollarSign}
+                size="sm"
+              />
+              <h2 className="text-xl">Sell your course</h2>
+            </div>
+            <PriceForm initialData={course} />
+          </div>
         </div>
       </div>
     </div>

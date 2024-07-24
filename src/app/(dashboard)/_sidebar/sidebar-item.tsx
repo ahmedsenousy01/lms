@@ -42,17 +42,13 @@ export default function SidebarItem({
     >
       <div className="flex items-center gap-x-2 py-4">
         <Icon
-          size={22}
+          size={isActive ? 24 : 22}
           className={cn("text-slate-500", isActive && "text-sky-700")}
         />
-        {label}
+        <span className={cn("text-sm", isActive && "text-[0.9rem] font-[600]")}>
+          {label}
+        </span>
       </div>
-      <div
-        className={cn(
-          "ml-auto h-full w-[4px] bg-sky-700 opacity-0 transition-all",
-          isActive && "opacity-100"
-        )}
-      />
     </button>
   );
 }

@@ -3,11 +3,11 @@ import { type AdapterAccount } from "next-auth/adapters";
 import { relations, sql } from "drizzle-orm";
 import {
   boolean,
-  decimal,
   index,
   integer,
   pgTableCreator,
   primaryKey,
+  real,
   text,
   timestamp,
   varchar,
@@ -84,7 +84,7 @@ export const courses = createTable(
     title: varchar("title", { length: 255 }).notNull(),
     description: text("description"),
     imageUrl: varchar("image_url", { length: 255 }),
-    price: decimal("price"),
+    price: real("price"),
     isPublished: boolean("is_published").default(false),
     userId: varchar("user_id", { length: 255 })
       .notNull()
