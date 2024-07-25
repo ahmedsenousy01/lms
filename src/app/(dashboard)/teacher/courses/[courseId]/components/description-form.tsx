@@ -16,21 +16,21 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 
 import type { courses } from "@/server/db/schema";
 
-import { cn, formatPrice } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
-import { useUpdateCourse } from "./queries/use-update-course";
+import { useUpdateCourse } from "../queries/use-update-course";
 
 const schema = z.object({
-  price: z.coerce.number(),
+  description: z.string().min(1, { message: "Description is required" }),
 });
 
-export default function PriceForm({
-  initialData: { id, price },
+export default function DescriptionForm({
+  initialData: { id, description },
 }: {
   initialData: InferSelectModel<typeof courses>;
 }) {
@@ -40,7 +40,7 @@ export default function PriceForm({
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
-      price: data?.price ?? price ?? undefined,
+      description: data?.description ?? description ?? "",
     },
   });
   const { isValid, isSubmitting } = form.formState;
@@ -49,16 +49,16 @@ export default function PriceForm({
     try {
       await updateCourse({
         id,
-        price: values.price,
+        description: values.description,
       });
       setEditing(false);
       toast({
-        title: "price updated",
+        description: "description updated",
         variant: "success",
       });
     } catch (error) {
       toast({
-        title: "Error editing course",
+        description: "Error editing course",
         variant: "destructive",
       });
     }
@@ -67,7 +67,7 @@ export default function PriceForm({
   return (
     <div className="mt-6 rounded-md border bg-slate-100 p-4">
       <div className="flex items-center justify-between font-medium">
-        Course price
+        Course description
         <Button
           onClick={() => setEditing(current => !current)}
           variant="ghost"
@@ -77,7 +77,7 @@ export default function PriceForm({
           ) : (
             <>
               <Pencil className="mr-2 size-4" />
-              Edit price
+              Edit description
             </>
           )}
         </Button>
@@ -90,15 +90,13 @@ export default function PriceForm({
           >
             <FormField
               control={form.control}
-              name="price"
+              name="description"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input
-                      type="number"
-                      step="0.01"
+                    <Textarea
                       disabled={isSubmitting}
-                      placeholder="set a price for your course"
+                      placeholder="e.g. 'Introduction to Web Development'"
                       {...field}
                     />
                   </FormControl>
@@ -119,14 +117,10 @@ export default function PriceForm({
           <p
             className={cn(
               "mt-2 text-sm",
-              !price && !data?.price && "italic text-slate-500"
+              !description && !data?.description && "italic text-slate-500"
             )}
           >
-            {data?.price
-              ? formatPrice(data.price)
-              : price
-                ? formatPrice(price)
-                : "No price"}
+            {data?.description ?? description ?? "No description"}
           </p>
         </>
       )}
