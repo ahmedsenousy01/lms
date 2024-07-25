@@ -9,7 +9,7 @@ import { CSS } from "@dnd-kit/utilities";
 const DragHandle = ({ listeners }: { listeners?: SyntheticListenerMap }) => (
   <span
     {...listeners}
-    style={{ cursor: "grab", padding: "0 10px" }}
+    style={{ cursor: "grab", padding: "0 10px", touchAction: "none" }}
   >
     ⠿
   </span>
@@ -38,7 +38,7 @@ export function SortableItem({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className="flex touch-none items-center gap-x-2"
+      className="flex items-center gap-x-2"
     >
       <DragHandle listeners={listeners} />
       {children}
