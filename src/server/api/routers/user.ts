@@ -24,29 +24,47 @@ export const userRouter = createTRPCRouter({
       return user ?? null;
     }),
   create: publicProcedure
-    .input(z.object({ email: z.string(), password: passwordSchema }))
+    .input(
+      z.object({
+        firstName: z.string(),
+        lastName: z.string(),
+        email: z.string(),
+        password: passwordSchema,
+      })
+    )
     .mutation(async ({ ctx, input }) => {
-      // TODO: this fn doesn't run change the db state while it should
-      const [user] = await ctx.db
-        .select()
-        .from(users)
-        .where(eq(users.email, input.email))
-        .limit(1);
+      try {
+        const existingUser = await ctx.db
+          .select()
+          .from(users)
+          .where(eq(users.email, input.email))
+          .limit(1);
 
-      if (user) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Email already exists",
-        });
+        if (existingUser.length > 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Email already exists",
+          });
+        }
+
+        const newUser = {
+          id: crypto.randomUUID(),
+          name: `${input.firstName} ${input.lastName}`,
+          email: input.email,
+          password: await bcrypt.hash(input.password, 10),
+        };
+
+        // Insert new user into the database
+        await ctx.db.insert(users).values(newUser).execute();
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        } else {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "An unexpected error occurred",
+          });
+        }
       }
-
-      const newUser = {
-        id: crypto.randomUUID(),
-        email: input.email,
-        password: await bcrypt.hash(input.password, 10),
-      };
-      await ctx.db.insert(users).values(newUser);
-
-      return newUser;
     }),
 });

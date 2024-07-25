@@ -76,6 +76,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   pages: {
     signIn: "/auth/login",
   },
+  debug: env.NODE_ENV === "development",
 });
 
 export const getCurrentUser = async () => {

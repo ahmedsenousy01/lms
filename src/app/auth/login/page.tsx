@@ -63,12 +63,15 @@ export default function LoginPage() {
   });
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
-    const res = await signIn("credentials", {
-      credentials: values,
-      redirectTo: searchParams.get("callbackUrl") ?? "/home",
-    });
-    if (res?.error) {
-      setApiError(res?.error);
+    try {
+      await signIn("credentials", {
+        redirect: true,
+        redirectTo: searchParams.get("callbackUrl") ?? DEFAULT_REDIRECT_ROUTE,
+        email: values.email,
+        password: values.password,
+      });
+    } catch (error) {
+      setApiError((error as Error).message);
     }
   }
 

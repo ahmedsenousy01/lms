@@ -49,11 +49,10 @@ export default function RegistrationPage() {
   async function onSubmit(values: z.infer<typeof signUpSchema>) {
     try {
       await createUser(values);
-    } catch (error) {
-      setApiError((error as Error).message ?? "Unknown error");
-    } finally {
       toast({ title: "Account created successfully" });
       router.push("/auth/login");
+    } catch (error) {
+      setApiError((error as Error).message ?? "Unknown error");
     }
   }
 
