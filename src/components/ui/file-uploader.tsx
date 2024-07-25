@@ -25,6 +25,7 @@ export function FileUploader({ onChange, endpoint }: FileUploaderProps) {
           variant: "destructive",
         });
       }}
+      className="mx-auto max-w-64 sm:max-w-full"
     />
   );
 }
