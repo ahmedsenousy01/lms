@@ -2,7 +2,6 @@
 
 import React from "react";
 
-// import { DraggableAttributes } from "@dnd-kit/core/dist/hooks";
 import { type SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -32,7 +31,6 @@ export function SortableItem({
       x: 0,
     }),
     transition,
-    touchAction: "manipulation",
   };
 
   return (
@@ -40,8 +38,7 @@ export function SortableItem({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...listeners}
-      className="flex items-center gap-x-2 hover:bg-slate-50"
+      className="flex touch-none items-center gap-x-2"
     >
       <DragHandle listeners={listeners} />
       {children}

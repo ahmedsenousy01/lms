@@ -2,21 +2,22 @@
 
 import { useState } from "react";
 
-import { type InferSelectModel } from "drizzle-orm";
 import { Loader2 } from "lucide-react";
 
-import type { chapters } from "@/server/db/schema";
+import type { Chapter } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 
 import { SortableList } from "./dnd/chapters-list";
 
-type Chapter = InferSelectModel<typeof chapters>;
-
 interface ChaptersListProps {
   chapters: Chapter[];
+  courseId: string;
 }
 
-export default function ChaptersList({ chapters }: ChaptersListProps) {
+export default function ChaptersList({
+  chapters,
+  courseId,
+}: ChaptersListProps) {
   const { mutateAsync: reorderChapters, isPending } =
     api.chapter.reorder.useMutation();
   const [items, setItems] = useState(chapters);
@@ -27,7 +28,7 @@ export default function ChaptersList({ chapters }: ChaptersListProps) {
         id: item.id,
         newPosition: idx + 1,
       })),
-      courseId: items[0]!.courseId,
+      courseId,
     });
   }
 

@@ -116,7 +116,7 @@ export default function LoginPage() {
                     render={({ field }) => (
                       <FormItem>
                         <div className="flex items-center">
-                          <FormLabel htmlFor="password">Password</FormLabel>
+                          <FormLabel>Password</FormLabel>
                           <Link
                             href="#"
                             className="ml-auto inline-block text-sm underline"
@@ -146,7 +146,7 @@ export default function LoginPage() {
           </Form>
           <Button
             variant="outline"
-            className="w-full mt-2"
+            className="mt-2 w-full"
             onClick={async () =>
               await signIn("google", {
                 redirectTo: DEFAULT_REDIRECT_ROUTE,
