@@ -4,7 +4,6 @@ import { useState } from "react";
 
 import Image from "next/image";
 
-import type { InferSelectModel } from "drizzle-orm";
 import { ImageIcon, Pencil, PlusCircle } from "lucide-react";
 import z from "zod";
 
@@ -12,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { FileUploader } from "@/components/ui/file-uploader";
 import { toast } from "@/components/ui/use-toast";
 
-import type { courses } from "@/server/db/schema";
+import type { Course } from "@/server/db/schema";
 
 import { useUpdateCourse } from "../queries/use-update-course";
 
@@ -23,7 +22,7 @@ const schema = z.object({
 export default function ThumbnailForm({
   initialData: { id, imageUrl },
 }: {
-  initialData: InferSelectModel<typeof courses>;
+  initialData: Course;
 }) {
   const [editing, setEditing] = useState<boolean>(false);
   const { data, mutateAsync: updateCourse } = useUpdateCourse({ id });

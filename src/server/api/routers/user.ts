@@ -26,6 +26,7 @@ export const userRouter = createTRPCRouter({
   create: publicProcedure
     .input(z.object({ email: z.string(), password: passwordSchema }))
     .mutation(async ({ ctx, input }) => {
+      // TODO: this fn doesn't run change the db state while it should
       const [user] = await ctx.db
         .select()
         .from(users)

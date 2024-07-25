@@ -4,7 +4,6 @@ import { useState } from "react";
 
 import { useRouter } from "next/navigation";
 
-import type { InferSelectModel } from "drizzle-orm";
 import { File, PlusCircle, Trash } from "lucide-react";
 import z from "zod";
 
@@ -12,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { FileUploader } from "@/components/ui/file-uploader";
 import { toast } from "@/components/ui/use-toast";
 
-import type { attachments, courses } from "@/server/db/schema";
+import type { Attachment, Course } from "@/server/db/schema";
 
 import { useAddAttachment } from "../queries/use-add-attachment";
 import { useDeleteAttachment } from "../queries/use-delete-attachment";
@@ -24,8 +23,8 @@ const schema = z.object({
 export default function AttachmentsForm({
   initialData: { id, courseAttachments },
 }: {
-  initialData: InferSelectModel<typeof courses> & {
-    courseAttachments: InferSelectModel<typeof attachments>[];
+  initialData: Course & {
+    courseAttachments: Attachment[];
   };
 }) {
   const router = useRouter();

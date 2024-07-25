@@ -1,6 +1,6 @@
 import { type AdapterAccount } from "next-auth/adapters";
 
-import { relations, sql } from "drizzle-orm";
+import { type InferSelectModel, relations, sql } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -40,6 +40,8 @@ export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
   courses: many(courses),
 }));
+
+export type DbUser = InferSelectModel<typeof users>;
 
 export const accounts = createTable(
   "account",
@@ -105,6 +107,8 @@ export const courses = createTable(
   })
 );
 
+export type Course = InferSelectModel<typeof courses>;
+
 export const coursesRelations = relations(courses, ({ one, many }) => ({
   user: one(users, {
     fields: [courses.userId],
@@ -142,6 +146,8 @@ export const categoriesRelations = relations(categories, ({ many }) => ({
   courses: many(courses),
 }));
 
+export type Category = InferSelectModel<typeof categories>;
+
 export const attachments = createTable(
   "attachment",
   {
@@ -172,6 +178,8 @@ export const attachmentsRelations = relations(attachments, ({ one }) => ({
     references: [courses.id],
   }),
 }));
+
+export type Attachment = InferSelectModel<typeof attachments>;
 
 export const chapters = createTable(
   "chapter",
@@ -211,6 +219,8 @@ export const chaptersRelations = relations(chapters, ({ one }) => ({
   }),
 }));
 
+export type Chapter = InferSelectModel<typeof chapters>;
+
 export const userProgress = createTable("user_progress", {
   id: varchar("id", { length: 255 })
     .notNull()
@@ -242,6 +252,8 @@ export const userProgressRelations = relations(userProgress, ({ one }) => ({
   }),
 }));
 
+export type UserProgress = InferSelectModel<typeof userProgress>;
+
 export const purchases = createTable("purchase", {
   id: varchar("id", { length: 255 })
     .notNull()
@@ -272,6 +284,8 @@ export const purchasesRelations = relations(purchases, ({ one }) => ({
   }),
 }));
 
+export type Purchase = InferSelectModel<typeof purchases>;
+
 export const stripeCustomers = createTable("stripe_customer", {
   id: varchar("id", { length: 255 })
     .notNull()
@@ -298,3 +312,5 @@ export const stripeCustomersRelations = relations(
     }),
   })
 );
+
+export type StripeCustomer = InferSelectModel<typeof stripeCustomers>;

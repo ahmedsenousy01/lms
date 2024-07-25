@@ -3,7 +3,6 @@
 import { useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { InferSelectModel } from "drizzle-orm";
 import { Pencil } from "lucide-react";
 import { useForm } from "react-hook-form";
 import z from "zod";
@@ -19,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 
-import type { courses } from "@/server/db/schema";
+import type { Course } from "@/server/db/schema";
 
 import { useUpdateCourse } from "../queries/use-update-course";
 
@@ -30,7 +29,7 @@ const schema = z.object({
 export default function TitleForm({
   initialData: { id, title },
 }: {
-  initialData: InferSelectModel<typeof courses>;
+  initialData: Course;
 }) {
   const [editing, setEditing] = useState<boolean>(false);
   const { data, mutateAsync: updateCourse } = useUpdateCourse({ id });

@@ -3,7 +3,6 @@
 import { useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { InferSelectModel } from "drizzle-orm";
 import { Pencil } from "lucide-react";
 import { useForm } from "react-hook-form";
 import z from "zod";
@@ -19,7 +18,7 @@ import {
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/use-toast";
 
-import type { courses } from "@/server/db/schema";
+import type { Course } from "@/server/db/schema";
 
 import { cn } from "@/lib/utils";
 
@@ -33,7 +32,7 @@ export default function CategoryForm({
   initialData: { id, categoryId },
   options,
 }: {
-  initialData: InferSelectModel<typeof courses>;
+  initialData: Course;
   options: { label: string; value: string }[];
 }) {
   const [editing, setEditing] = useState<boolean>(false);

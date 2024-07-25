@@ -5,8 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { InferSelectModel } from "drizzle-orm";
-import { Pencil, PlusCircle, Trash } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 
@@ -21,7 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 
-import type { chapters, courses } from "@/server/db/schema";
+import type { Chapter, Course } from "@/server/db/schema";
 
 import { useCreateChapter } from "../queries/use-create-chapter";
 import ChaptersList from "./chapters-list";
@@ -33,8 +32,8 @@ const schema = z.object({
 export default function ChaptersForm({
   initialData: { id, courseChapters },
 }: {
-  initialData: InferSelectModel<typeof courses> & {
-    courseChapters: InferSelectModel<typeof chapters>[];
+  initialData: Course & {
+    courseChapters: Chapter[];
   };
 }) {
   const router = useRouter();
@@ -127,7 +126,10 @@ export default function ChaptersForm({
           {hasChapters ? (
             <div className="relative">
               <div className="max-h-52 space-y-4 overflow-y-auto">
-                <ChaptersList chapters={[...courseChapters]} />
+                <ChaptersList
+                  chapters={[...courseChapters]}
+                  courseId={id}
+                />
               </div>
             </div>
           ) : (
