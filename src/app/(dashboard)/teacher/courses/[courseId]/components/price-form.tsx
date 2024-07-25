@@ -9,7 +9,6 @@ import { useForm } from "react-hook-form";
 import z from "zod";
 
 import { Button } from "@/components/ui/button";
-import { Combobox } from "@/components/ui/combobox";
 import {
   Form,
   FormControl,
@@ -17,24 +16,23 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 
 import type { courses } from "@/server/db/schema";
 
-import { cn } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
 
-import { useUpdateCourse } from "./queries/use-update-course";
+import { useUpdateCourse } from "../queries/use-update-course";
 
 const schema = z.object({
-  categoryId: z.string().min(1, { message: "Category is required" }),
+  price: z.coerce.number(),
 });
 
-export default function CategoryForm({
-  initialData: { id, categoryId },
-  options,
+export default function PriceForm({
+  initialData: { id, price },
 }: {
   initialData: InferSelectModel<typeof courses>;
-  options: { label: string; value: string }[];
 }) {
   const [editing, setEditing] = useState<boolean>(false);
   const { data, mutateAsync: updateCourse } = useUpdateCourse({ id });
@@ -42,7 +40,7 @@ export default function CategoryForm({
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
-      categoryId: data?.categoryId ?? categoryId ?? "",
+      price: data?.price ?? price ?? undefined,
     },
   });
   const { isValid, isSubmitting } = form.formState;
@@ -51,29 +49,25 @@ export default function CategoryForm({
     try {
       await updateCourse({
         id,
-        categoryId: values.categoryId,
+        price: values.price,
       });
       setEditing(false);
       toast({
-        description: "description updated",
+        title: "price updated",
         variant: "success",
       });
     } catch (error) {
       toast({
-        description: "Error editing course",
+        title: "Error editing course",
         variant: "destructive",
       });
     }
   }
 
-  const selectedOption = options.find(
-    option => option.value === (data?.categoryId ?? categoryId)
-  );
-
   return (
     <div className="mt-6 rounded-md border bg-slate-100 p-4">
       <div className="flex items-center justify-between font-medium">
-        Course category
+        Course price
         <Button
           onClick={() => setEditing(current => !current)}
           variant="ghost"
@@ -83,7 +77,7 @@ export default function CategoryForm({
           ) : (
             <>
               <Pencil className="mr-2 size-4" />
-              Edit category
+              Edit price
             </>
           )}
         </Button>
@@ -96,12 +90,15 @@ export default function CategoryForm({
           >
             <FormField
               control={form.control}
-              name="categoryId"
+              name="price"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Combobox
-                      options={options}
+                    <Input
+                      type="number"
+                      step="0.01"
+                      disabled={isSubmitting}
+                      placeholder="set a price for your course"
                       {...field}
                     />
                   </FormControl>
@@ -122,10 +119,14 @@ export default function CategoryForm({
           <p
             className={cn(
               "mt-2 text-sm",
-              !categoryId && !selectedOption && "italic text-slate-500"
+              !price && !data?.price && "italic text-slate-500"
             )}
           >
-            {selectedOption?.label ?? "No category"}
+            {data?.price
+              ? formatPrice(data.price)
+              : price
+                ? formatPrice(price)
+                : "No price"}
           </p>
         </>
       )}

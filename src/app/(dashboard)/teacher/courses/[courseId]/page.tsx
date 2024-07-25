@@ -11,12 +11,13 @@ import { IconBadge } from "@/components/ui/icon-badge";
 
 import { api } from "@/trpc/server";
 
-import AttachmentsForm from "./attachments-form";
-import CategoryForm from "./category-form";
-import DescriptionForm from "./description-form";
-import PriceForm from "./price-form";
-import ThumbnailForm from "./thumbnail-form";
-import TitleForm from "./title-form";
+import AttachmentsForm from "./components/attachments-form";
+import CategoryForm from "./components/category-form";
+import ChaptersForm from "./components/chapters-form";
+import DescriptionForm from "./components/description-form";
+import PriceForm from "./components/price-form";
+import ThumbnailForm from "./components/thumbnail-form";
+import TitleForm from "./components/title-form";
 
 export default async function CoursesPage({
   params: { courseId },
@@ -43,6 +44,7 @@ export default async function CoursesPage({
     course.imageUrl,
     course.price,
     course.categoryId,
+    course.courseChapters.some(chapter => chapter.isPublished),
   ];
   const totalFields = requiredFields.length;
   const completedFields = requiredFields.filter(Boolean).length;
@@ -87,7 +89,7 @@ export default async function CoursesPage({
               />
               <h2 className="text-xl">Course chapters</h2>
             </div>
-            <div>TODO: Add chapters</div>
+            <ChaptersForm initialData={course} />
           </div>
           <div>
             <div className="flex items-center gap-x-2">

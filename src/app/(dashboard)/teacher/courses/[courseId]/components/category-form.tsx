@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import z from "zod";
 
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import {
   Form,
   FormControl,
@@ -16,21 +17,24 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 
 import type { courses } from "@/server/db/schema";
 
-import { useUpdateCourse } from "./queries/use-update-course";
+import { cn } from "@/lib/utils";
+
+import { useUpdateCourse } from "../queries/use-update-course";
 
 const schema = z.object({
-  title: z.string().min(1, { message: "Title is required" }),
+  categoryId: z.string().min(1, { message: "Category is required" }),
 });
 
-export default function TitleForm({
-  initialData: { id, title },
+export default function CategoryForm({
+  initialData: { id, categoryId },
+  options,
 }: {
   initialData: InferSelectModel<typeof courses>;
+  options: { label: string; value: string }[];
 }) {
   const [editing, setEditing] = useState<boolean>(false);
   const { data, mutateAsync: updateCourse } = useUpdateCourse({ id });
@@ -38,7 +42,7 @@ export default function TitleForm({
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
-      title: data?.title ?? title,
+      categoryId: data?.categoryId ?? categoryId ?? "",
     },
   });
   const { isValid, isSubmitting } = form.formState;
@@ -47,25 +51,29 @@ export default function TitleForm({
     try {
       await updateCourse({
         id,
-        title: values.title,
+        categoryId: values.categoryId,
       });
       setEditing(false);
       toast({
-        title: "Title updated",
+        description: "description updated",
         variant: "success",
       });
     } catch (error) {
       toast({
-        title: "Error editing course",
+        description: "Error editing course",
         variant: "destructive",
       });
     }
   }
 
+  const selectedOption = options.find(
+    option => option.value === (data?.categoryId ?? categoryId)
+  );
+
   return (
     <div className="mt-6 rounded-md border bg-slate-100 p-4">
       <div className="flex items-center justify-between font-medium">
-        Course title
+        Course category
         <Button
           onClick={() => setEditing(current => !current)}
           variant="ghost"
@@ -75,7 +83,7 @@ export default function TitleForm({
           ) : (
             <>
               <Pencil className="mr-2 size-4" />
-              Edit title
+              Edit category
             </>
           )}
         </Button>
@@ -88,13 +96,12 @@ export default function TitleForm({
           >
             <FormField
               control={form.control}
-              name="title"
+              name="categoryId"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input
-                      disabled={isSubmitting}
-                      placeholder="e.g. 'Introduction to Web Development'"
+                    <Combobox
+                      options={options}
                       {...field}
                     />
                   </FormControl>
@@ -112,7 +119,14 @@ export default function TitleForm({
         </Form>
       ) : (
         <>
-          <p className="mt-2 text-sm">{data?.title ?? title}</p>
+          <p
+            className={cn(
+              "mt-2 text-sm",
+              !categoryId && !selectedOption && "italic text-slate-500"
+            )}
+          >
+            {selectedOption?.label ?? "No category"}
+          </p>
         </>
       )}
     </div>

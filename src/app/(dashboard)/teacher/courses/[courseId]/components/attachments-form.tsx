@@ -14,8 +14,8 @@ import { toast } from "@/components/ui/use-toast";
 
 import type { attachments, courses } from "@/server/db/schema";
 
-import { useAddAttachment } from "./queries/use-add-attachment";
-import { useDeleteAttachment } from "./queries/use-delete-attachment";
+import { useAddAttachment } from "../queries/use-add-attachment";
+import { useDeleteAttachment } from "../queries/use-delete-attachment";
 
 const schema = z.object({
   url: z.string().url().min(1, { message: "url is required" }),
@@ -28,7 +28,6 @@ export default function AttachmentsForm({
     courseAttachments: InferSelectModel<typeof attachments>[];
   };
 }) {
-  console.log(courseAttachments);
   const router = useRouter();
   const [editing, setEditing] = useState<boolean>(false);
   const { mutateAsync: addAttachment } = useAddAttachment({ id });

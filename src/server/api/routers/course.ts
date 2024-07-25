@@ -7,7 +7,7 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
-import { attachments, courses } from "@/server/db/schema";
+import { attachments, chapters, courses } from "@/server/db/schema";
 
 export const courseRouter = createTRPCRouter({
   getAllHeadlines: publicProcedure.query(async ({ ctx }) => {
@@ -52,9 +52,23 @@ export const courseRouter = createTRPCRouter({
         .where(eq(attachments.courseId, course.id))
         .execute();
 
+      const courseChapters = await ctx.db
+        .select()
+        .from(chapters)
+        .where(eq(chapters.courseId, course.id))
+        .orderBy(chapters.position)
+        .execute();
+
+      // console.log({
+      //   ...course,
+      //   courseAttachments,
+      //   courseChapters,
+      // });
+
       return {
         ...course,
         courseAttachments,
+        courseChapters,
       };
     }),
   create: protectedProcedure

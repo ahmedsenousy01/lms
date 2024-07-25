@@ -16,21 +16,19 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 
 import type { courses } from "@/server/db/schema";
 
-import { cn } from "@/lib/utils";
-
-import { useUpdateCourse } from "./queries/use-update-course";
+import { useUpdateCourse } from "../queries/use-update-course";
 
 const schema = z.object({
-  description: z.string().min(1, { message: "Description is required" }),
+  title: z.string().min(1, { message: "Title is required" }),
 });
 
-export default function DescriptionForm({
-  initialData: { id, description },
+export default function TitleForm({
+  initialData: { id, title },
 }: {
   initialData: InferSelectModel<typeof courses>;
 }) {
@@ -40,7 +38,7 @@ export default function DescriptionForm({
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
-      description: data?.description ?? description ?? "",
+      title: data?.title ?? title,
     },
   });
   const { isValid, isSubmitting } = form.formState;
@@ -49,16 +47,16 @@ export default function DescriptionForm({
     try {
       await updateCourse({
         id,
-        description: values.description,
+        title: values.title,
       });
       setEditing(false);
       toast({
-        description: "description updated",
+        title: "Title updated",
         variant: "success",
       });
     } catch (error) {
       toast({
-        description: "Error editing course",
+        title: "Error editing course",
         variant: "destructive",
       });
     }
@@ -67,7 +65,7 @@ export default function DescriptionForm({
   return (
     <div className="mt-6 rounded-md border bg-slate-100 p-4">
       <div className="flex items-center justify-between font-medium">
-        Course description
+        Course title
         <Button
           onClick={() => setEditing(current => !current)}
           variant="ghost"
@@ -77,7 +75,7 @@ export default function DescriptionForm({
           ) : (
             <>
               <Pencil className="mr-2 size-4" />
-              Edit description
+              Edit title
             </>
           )}
         </Button>
@@ -90,11 +88,11 @@ export default function DescriptionForm({
           >
             <FormField
               control={form.control}
-              name="description"
+              name="title"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Textarea
+                    <Input
                       disabled={isSubmitting}
                       placeholder="e.g. 'Introduction to Web Development'"
                       {...field}
@@ -114,14 +112,7 @@ export default function DescriptionForm({
         </Form>
       ) : (
         <>
-          <p
-            className={cn(
-              "mt-2 text-sm",
-              !description && !data?.description && "italic text-slate-500"
-            )}
-          >
-            {data?.description ?? description ?? "No description"}
-          </p>
+          <p className="mt-2 text-sm">{data?.title ?? title}</p>
         </>
       )}
     </div>
