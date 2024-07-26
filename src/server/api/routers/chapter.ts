@@ -1,11 +1,46 @@
+import { env } from "@/env";
+import Mux from "@mux/mux-node";
 import { TRPCError } from "@trpc/server";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { chapters, courses } from "@/server/db/schema";
 
+const { video } = new Mux({
+  tokenId: env.MUX_TOKEN_ID,
+  tokenSecret: env.MUX_TOKEN_SECRET,
+});
+
 export const chapterRouter = createTRPCRouter({
+  getById: protectedProcedure
+    .input(
+      z.object({
+        chapterId: z.string(),
+        courseId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const [chapter] = await ctx.db
+        .select()
+        .from(chapters)
+        .where(
+          and(
+            eq(chapters.id, input.chapterId),
+            eq(chapters.courseId, input.courseId)
+          )
+        )
+        .limit(1);
+
+      if (!chapter) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Chapter not found",
+        });
+      }
+
+      return chapter;
+    }),
   getByCourseId: protectedProcedure
     .input(
       z.object({
@@ -84,6 +119,103 @@ export const chapterRouter = createTRPCRouter({
         createdAt: new Date(),
         updatedAt: new Date(),
       };
+    }),
+  update: protectedProcedure
+    .input(
+      z.object({
+        chapter: z.object({
+          id: z.string(),
+          title: z.string().optional(),
+          description: z.string().optional(),
+          isPublished: z.boolean().optional(),
+          isFree: z.boolean().optional(),
+          videoUrl: z.string().optional(),
+          muxAssetId: z.string().optional(),
+          muxPlaybackId: z.string().optional(),
+        }),
+        courseId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const [chapter] = await ctx.db
+        .select({
+          id: chapters.id,
+          muxAssetId: chapters.muxAssetId,
+        })
+        .from(chapters)
+        .where(
+          and(
+            eq(chapters.id, input.chapter.id),
+            eq(chapters.courseId, input.courseId)
+          )
+        )
+        .limit(1);
+
+      if (!chapter) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Chapter not found or you are not authorized to access it",
+        });
+      }
+
+      try {
+        await ctx.db
+          .update(chapters)
+          .set({
+            title: input.chapter.title,
+            description: input.chapter.description,
+            isPublished: input.chapter.isPublished,
+            isFree: input.chapter.isFree,
+            videoUrl: input.chapter.videoUrl,
+            muxAssetId: input.chapter.muxAssetId,
+            muxPlaybackId: input.chapter.muxPlaybackId,
+          })
+          .where(
+            and(
+              eq(chapters.id, input.chapter.id),
+              eq(chapters.courseId, input.courseId)
+            )
+          )
+          .execute();
+
+        if (input.chapter.videoUrl) {
+          if (chapter.muxAssetId) {
+            await video.assets.delete(chapter.muxAssetId);
+          }
+
+          const asset = await video.assets.create({
+            input: [
+              {
+                url: input.chapter.videoUrl,
+              },
+            ],
+            playback_policy: ["public"],
+            test: false,
+          });
+
+          await ctx.db
+            .update(chapters)
+            .set({
+              muxAssetId: asset.id,
+              muxPlaybackId: asset.playback_ids?.[0]?.id,
+            })
+            .where(eq(chapters.id, input.chapter.id))
+            .execute();
+
+          return {
+            ...input.chapter,
+            muxAssetId: asset.id,
+            muxPlaybackId: asset.playback_ids?.[0]?.id,
+          };
+
+          return input.chapter;
+        }
+      } catch (error) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Error updating chapter",
+        });
+      }
     }),
   reorder: protectedProcedure
     .input(
