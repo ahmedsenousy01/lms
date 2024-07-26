@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { useState } from "react";
 
 import MuxPlayer from "@mux/mux-player-react";
 import { Pencil, PlusCircle, VideoIcon } from "lucide-react";

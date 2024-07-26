@@ -207,9 +207,8 @@ export const chapterRouter = createTRPCRouter({
             muxAssetId: asset.id,
             muxPlaybackId: asset.playback_ids?.[0]?.id,
           };
-
-          return input.chapter;
         }
+        return input.chapter;
       } catch (error) {
         throw new TRPCError({
           code: "BAD_REQUEST",
