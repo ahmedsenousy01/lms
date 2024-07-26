@@ -3,7 +3,7 @@
  * without requiring authentication.
  * @type {string[]}
  * */
-export const publicRoutes = ["/warmup", "/api/warmup", "/api/uploadthing"];
+export const publicRoutes = ["/warmup"];
 
 /**
  * An array of routes used for authentication.
@@ -11,12 +11,5 @@ export const publicRoutes = ["/warmup", "/api/warmup", "/api/uploadthing"];
  * @type {string[]}
  * */
 export const authRoutes = ["/auth/login", "/auth/register"];
-
-/**
- * The prefix for API authentication routes.
- * Routes that start with this prefix will be used for API authentication.
- * @type {string}
- * */
-export const apiAuthPrefix = "/api/auth";
 
 export const DEFAULT_REDIRECT_ROUTE = "/";

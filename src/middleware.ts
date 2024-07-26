@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/server/auth";
 import {
-  apiAuthPrefix,
   authRoutes,
   DEFAULT_REDIRECT_ROUTE,
   publicRoutes,
@@ -12,11 +11,8 @@ export default auth(req => {
   const { pathname } = req.nextUrl;
   const isLoggedIn = !!req.auth;
 
-  const isApiAuthRoute = pathname.startsWith(apiAuthPrefix);
   const isPublicRoute = publicRoutes.includes(pathname);
   const isAuthRoute = authRoutes.includes(pathname);
-
-  if (isApiAuthRoute) return NextResponse.next();
 
   if (isAuthRoute) {
     if (isLoggedIn) {
@@ -40,5 +36,5 @@ export default auth(req => {
 });
 
 export const config = {
-  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/"],
+  matcher: ["/((?!.+\\.[\\w]+$|_next|api|logo.svg|favicon.ico).*)", "/"],
 };
