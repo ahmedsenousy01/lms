@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/use-toast";
 
-import type { Course } from "@/server/db/schema";
+import { api } from "@/trpc/react";
 
 import { cn } from "@/lib/utils";
 
@@ -28,20 +28,20 @@ const schema = z.object({
   categoryId: z.string().min(1, { message: "Category is required" }),
 });
 
-export default function CategoryForm({
-  initialData: { id, categoryId },
-  options,
-}: {
-  initialData: Course;
-  options: { label: string; value: string }[];
-}) {
+export default function CategoryForm({ courseId }: { courseId: string }) {
   const [editing, setEditing] = useState<boolean>(false);
-  const { data, mutateAsync: updateCourse } = useUpdateCourse({ id });
+  const { mutateAsync: updateCourse } = useUpdateCourse({ courseId });
+  const [course] = api.course.getDetailsById.useSuspenseQuery({ courseId });
+  const [categories] = api.category.getAll.useSuspenseQuery();
+  const options = categories.map(category => ({
+    label: category.name,
+    value: category.id,
+  }));
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
-      categoryId: data?.categoryId ?? categoryId ?? "",
+      categoryId: course?.categoryId ?? undefined,
     },
   });
   const { isValid, isSubmitting } = form.formState;
@@ -49,12 +49,12 @@ export default function CategoryForm({
   async function handleSubmit(values: z.infer<typeof schema>) {
     try {
       await updateCourse({
-        id,
+        id: courseId,
         categoryId: values.categoryId,
       });
       setEditing(false);
       toast({
-        description: "description updated",
+        description: "category updated",
         variant: "success",
       });
     } catch (error) {
@@ -66,7 +66,7 @@ export default function CategoryForm({
   }
 
   const selectedOption = options.find(
-    option => option.value === (data?.categoryId ?? categoryId)
+    option => option.value === course?.categoryId
   );
 
   return (
@@ -121,7 +121,7 @@ export default function CategoryForm({
           <p
             className={cn(
               "mt-2 text-sm",
-              !categoryId && !selectedOption && "italic text-slate-500"
+              !course?.categoryId && !selectedOption && "italic text-slate-500"
             )}
           >
             {selectedOption?.label ?? "No category"}

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { FileUploader } from "@/components/ui/file-uploader";
 import { toast } from "@/components/ui/use-toast";
 
-import type { Attachment, Course } from "@/server/db/schema";
+import { api } from "@/trpc/react";
 
 import { useAddAttachment } from "../queries/use-add-attachment";
 import { useDeleteAttachment } from "../queries/use-delete-attachment";
@@ -20,23 +20,20 @@ const schema = z.object({
   url: z.string().url().min(1, { message: "url is required" }),
 });
 
-export default function AttachmentsForm({
-  initialData: { id, courseAttachments },
-}: {
-  initialData: Course & {
-    courseAttachments: Attachment[];
-  };
-}) {
+export default function AttachmentsForm({ courseId }: { courseId: string }) {
   const router = useRouter();
   const [editing, setEditing] = useState<boolean>(false);
-  const { mutateAsync: addAttachment } = useAddAttachment({ id });
-  const { mutateAsync: deleteAttachment } = useDeleteAttachment({ id });
+  const { mutateAsync: addAttachment } = useAddAttachment({ courseId });
+  const { mutateAsync: deleteAttachment } = useDeleteAttachment({
+    courseId,
+  });
+  const [course] = api.course.getDetailsById.useSuspenseQuery({ courseId });
 
   async function handleSubmit(values: z.infer<typeof schema>) {
     try {
       await addAttachment({
         url: values.url,
-        courseId: id,
+        courseId,
       });
       setEditing(false);
       toast({
@@ -44,12 +41,11 @@ export default function AttachmentsForm({
         variant: "success",
       });
     } catch (error) {
+      setEditing(false);
       toast({
         description: "Error editing course",
         variant: "destructive",
       });
-    } finally {
-      router.refresh();
     }
   }
 
@@ -57,7 +53,7 @@ export default function AttachmentsForm({
     try {
       await deleteAttachment({
         id: attachmentId,
-        courseId: id,
+        courseId,
       });
       setEditing(false);
       toast({
@@ -74,7 +70,7 @@ export default function AttachmentsForm({
     }
   }
 
-  const hasAttachments = courseAttachments.length > 0;
+  const hasAttachments = course?.courseAttachments.length > 0;
 
   return (
     <div className="mt-6 rounded-md border bg-slate-100 p-4">
@@ -109,7 +105,7 @@ export default function AttachmentsForm({
       ) : hasAttachments ? (
         <>
           <div className="max-h-52 space-y-2 overflow-y-auto">
-            {courseAttachments.map(attachment => (
+            {course?.courseAttachments.map(attachment => (
               <div
                 key={attachment?.id}
                 className="flex w-full items-center rounded-md border border-sky-200 bg-sky-100 px-3 py-1 text-sky-700"

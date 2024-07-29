@@ -7,6 +7,8 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { chapters, courses } from "@/server/db/schema";
 
+import { unpublishCourseIfNoPublishedChapters } from "../use-cases/course";
+
 const { video } = new Mux({
   tokenId: env.MUX_TOKEN_ID,
   tokenSecret: env.MUX_TOKEN_SECRET,
@@ -178,6 +180,14 @@ export const chapterRouter = createTRPCRouter({
           )
           .execute();
 
+        // If the chapter is not published, unpublish the course if no published chapters
+        if (!input.chapter.isPublished) {
+          await unpublishCourseIfNoPublishedChapters({
+            courseId: input.courseId,
+          });
+        }
+
+        // If the chapter has a video, delete the existing Mux asset and create a new one
         if (input.chapter.videoUrl) {
           if (chapter.muxAssetId) {
             await video.assets.delete(chapter.muxAssetId);
@@ -260,5 +270,51 @@ export const chapterRouter = createTRPCRouter({
         .orderBy(chapters.position);
 
       return reorderedChapters;
+    }),
+  delete: protectedProcedure
+    .input(z.object({ id: z.string(), courseId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const [chapter] = await ctx.db
+        .select({
+          courseId: chapters.courseId,
+          muxAssetId: chapters.muxAssetId,
+        })
+        .from(chapters)
+        .where(eq(chapters.id, input.id))
+        .limit(1);
+
+      if (!chapter) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Chapter not found",
+        });
+      }
+
+      try {
+        if (chapter.muxAssetId) {
+          await video.assets.delete(chapter.muxAssetId);
+        }
+
+        await ctx.db
+          .delete(chapters)
+          .where(
+            and(
+              eq(chapters.id, input.id),
+              eq(chapters.courseId, input.courseId)
+            )
+          )
+          .execute();
+
+        await unpublishCourseIfNoPublishedChapters({
+          courseId: input.courseId,
+        });
+
+        return true;
+      } catch (error) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Error deleting chapter",
+        });
+      }
     }),
 });

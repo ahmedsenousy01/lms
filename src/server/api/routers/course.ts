@@ -22,13 +22,13 @@ export const courseRouter = createTRPCRouter({
       .orderBy(courses.createdAt);
   }),
   getDetailsById: protectedProcedure
-    .input(z.object({ id: z.string() }))
-    .query(async ({ ctx, input: { id } }) => {
+    .input(z.object({ courseId: z.string() }))
+    .query(async ({ ctx, input: { courseId } }) => {
       // Fetch the course and its attachments
       const [course] = await ctx.db
         .select()
         .from(courses)
-        .where(eq(courses.id, id))
+        .where(eq(courses.id, courseId))
         .limit(1)
         .execute();
 
@@ -59,12 +59,6 @@ export const courseRouter = createTRPCRouter({
         .orderBy(chapters.position)
         .execute();
 
-      // console.log({
-      //   ...course,
-      //   courseAttachments,
-      //   courseChapters,
-      // });
-
       return {
         ...course,
         courseAttachments,
@@ -91,6 +85,7 @@ export const courseRouter = createTRPCRouter({
         imageUrl: z.string().url().optional(),
         categoryId: z.string().optional(),
         price: z.number().optional(),
+        isPublished: z.boolean().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -108,6 +103,7 @@ export const courseRouter = createTRPCRouter({
             imageUrl: input.imageUrl,
             categoryId: input.categoryId,
             price: input.price,
+            isPublished: input.isPublished,
           })
           .where(condition);
       } catch {
@@ -124,5 +120,24 @@ export const courseRouter = createTRPCRouter({
         .limit(1);
 
       return course ?? null;
+    }),
+  delete: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const condition = and(
+        eq(courses.id, input.id),
+        eq(courses.userId, ctx.session.user.id)
+      );
+
+      try {
+        await ctx.db.delete(courses).where(condition);
+      } catch {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Course not found or you are not authorized to access it",
+        });
+      }
+
+      return null;
     }),
 });

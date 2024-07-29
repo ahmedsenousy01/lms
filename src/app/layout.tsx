@@ -1,6 +1,8 @@
 import { type Metadata } from "next";
 
+import { env } from "@/env";
 import "@/styles/globals.css";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { GeistSans } from "geist/font/sans";
 
 import AuthSessionProvider from "@/components/providers/session-provider";
@@ -26,7 +28,12 @@ export default async function RootLayout({
     >
       <body>
         <AuthSessionProvider session={session}>
-          <TRPCReactProvider>{children}</TRPCReactProvider>
+          <TRPCReactProvider>
+            {children}
+            {env.NODE_ENV !== "production" && (
+              <ReactQueryDevtools initialIsOpen={false} />
+            )}
+          </TRPCReactProvider>
         </AuthSessionProvider>
         <Toaster />
       </body>

@@ -2,11 +2,23 @@ import { toast } from "@/components/ui/use-toast";
 
 import { api } from "@/trpc/react";
 
-export function useAddAttachment({ id }: { id: string }) {
+export function useAddAttachment({ courseId }: { courseId: string }) {
   const utils = api.useUtils();
   return api.attachment.add.useMutation({
-    onSettled: async () => {
-      await utils.course.getDetailsById.invalidate({ id });
+    onSuccess: attachment => {
+      utils.course.getDetailsById.setData({ courseId }, old => {
+        return {
+          ...old!,
+          courseAttachments: [
+            ...(old?.courseAttachments ?? []),
+            {
+              ...attachment,
+              updatedAt: null,
+              createdAt: new Date(),
+            },
+          ],
+        };
+      });
     },
     onError: error => {
       toast({
@@ -14,6 +26,9 @@ export function useAddAttachment({ id }: { id: string }) {
         description: error.message ?? "Something went wrong",
         variant: "destructive",
       });
+    },
+    onSettled: async () => {
+      await utils.course.getDetailsById.invalidate({ courseId });
     },
   });
 }

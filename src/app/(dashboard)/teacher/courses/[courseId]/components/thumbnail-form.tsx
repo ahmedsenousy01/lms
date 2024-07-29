@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { FileUploader } from "@/components/ui/file-uploader";
 import { toast } from "@/components/ui/use-toast";
 
-import type { Course } from "@/server/db/schema";
+import { api } from "@/trpc/react";
 
 import { useUpdateCourse } from "../queries/use-update-course";
 
@@ -19,18 +19,15 @@ const schema = z.object({
   imageUrl: z.string().url().min(1, { message: "imageUrl is required" }),
 });
 
-export default function ThumbnailForm({
-  initialData: { id, imageUrl },
-}: {
-  initialData: Course;
-}) {
+export default function ThumbnailForm({ courseId }: { courseId: string }) {
   const [editing, setEditing] = useState<boolean>(false);
-  const { data, mutateAsync: updateCourse } = useUpdateCourse({ id });
+  const [course] = api.course.getDetailsById.useSuspenseQuery({ courseId });
+  const { mutateAsync: updateCourse } = useUpdateCourse({ courseId });
 
   async function handleSubmit(values: z.infer<typeof schema>) {
     try {
       await updateCourse({
-        id,
+        id: courseId,
         imageUrl: values.imageUrl,
       });
       setEditing(false);
@@ -56,7 +53,7 @@ export default function ThumbnailForm({
         >
           {editing ? (
             "Cancel"
-          ) : (imageUrl ?? data?.imageUrl) ? (
+          ) : course?.imageUrl ? (
             <>
               <Pencil className="mr-2 size-4" />
               Edit thumbnail
@@ -81,12 +78,12 @@ export default function ThumbnailForm({
             16:9 aspect ratio recommended
           </div>
         </>
-      ) : (imageUrl ?? data?.imageUrl) ? (
+      ) : course?.imageUrl ? (
         <>
           <div className="relative mt-2 aspect-video">
             <Image
               alt="Course thumbnail"
-              src={imageUrl ?? data?.imageUrl ?? ""}
+              src={course?.imageUrl}
               fill
               className="rounded-md object-cover"
             />

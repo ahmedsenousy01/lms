@@ -18,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 
-import type { Course } from "@/server/db/schema";
+import { api } from "@/trpc/react";
 
 import { useUpdateCourse } from "../queries/use-update-course";
 
@@ -26,18 +26,18 @@ const schema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
 });
 
-export default function TitleForm({
-  initialData: { id, title },
-}: {
-  initialData: Course;
-}) {
+export default function TitleForm({ courseId }: { courseId: string }) {
   const [editing, setEditing] = useState<boolean>(false);
-  const { data, mutateAsync: updateCourse } = useUpdateCourse({ id });
+  const [course] = api.course.getDetailsById.useSuspenseQuery({
+    courseId,
+  });
+
+  const { mutateAsync: updateCourse } = useUpdateCourse({ courseId });
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
-      title: data?.title ?? title,
+      title: course?.title,
     },
   });
   const { isValid, isSubmitting } = form.formState;
@@ -45,7 +45,7 @@ export default function TitleForm({
   async function handleSubmit(values: z.infer<typeof schema>) {
     try {
       await updateCourse({
-        id,
+        id: courseId,
         title: values.title,
       });
       setEditing(false);
@@ -111,7 +111,7 @@ export default function TitleForm({
         </Form>
       ) : (
         <>
-          <p className="mt-2 text-sm">{data?.title ?? title}</p>
+          <p className="mt-2 text-sm">{course?.title}</p>
         </>
       )}
     </div>

@@ -18,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 
-import type { Course } from "@/server/db/schema";
+import { api } from "@/trpc/react";
 
 import { cn, formatPrice } from "@/lib/utils";
 
@@ -28,18 +28,15 @@ const schema = z.object({
   price: z.coerce.number(),
 });
 
-export default function PriceForm({
-  initialData: { id, price },
-}: {
-  initialData: Course;
-}) {
+export default function PriceForm({ courseId }: { courseId: string }) {
   const [editing, setEditing] = useState<boolean>(false);
-  const { data, mutateAsync: updateCourse } = useUpdateCourse({ id });
+  const { mutateAsync: updateCourse } = useUpdateCourse({ courseId });
+  const [course] = api.course.getDetailsById.useSuspenseQuery({ courseId });
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
-      price: data?.price ?? price ?? undefined,
+      price: course?.price ?? undefined,
     },
   });
   const { isValid, isSubmitting } = form.formState;
@@ -47,7 +44,7 @@ export default function PriceForm({
   async function handleSubmit(values: z.infer<typeof schema>) {
     try {
       await updateCourse({
-        id,
+        id: courseId,
         price: values.price,
       });
       setEditing(false);
@@ -118,14 +115,10 @@ export default function PriceForm({
           <p
             className={cn(
               "mt-2 text-sm",
-              !price && !data?.price && "italic text-slate-500"
+              !course?.price && "italic text-slate-500"
             )}
           >
-            {data?.price
-              ? formatPrice(data.price)
-              : price
-                ? formatPrice(price)
-                : "No price"}
+            {course?.price ? formatPrice(course.price) : "No price"}
           </p>
         </>
       )}

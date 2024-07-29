@@ -2,11 +2,27 @@ import { toast } from "@/components/ui/use-toast";
 
 import { api } from "@/trpc/react";
 
-export function useUpdateChapter({ id }: { id: string }) {
+export function useUpdateChapter({
+  chapterId,
+  courseId,
+}: {
+  chapterId: string;
+  courseId: string;
+}) {
   const utils = api.useUtils();
   return api.chapter.update.useMutation({
-    onSettled: async () => {
-      await utils.course.getDetailsById.invalidate({ id });
+    onSuccess: chapter => {
+      utils.chapter.getById.setData({ chapterId, courseId }, old => {
+        return {
+          ...old!,
+          ...chapter,
+        };
+      });
+      toast({
+        title: "Course updated",
+        description: "The course has been updated",
+        variant: "success",
+      });
     },
     onError: error => {
       toast({
@@ -14,6 +30,15 @@ export function useUpdateChapter({ id }: { id: string }) {
         description: error.message ?? "Something went wrong",
         variant: "destructive",
       });
+    },
+    onSettled: async () => {
+      await utils.chapter.getById.invalidate({ chapterId, courseId });
+      await utils.course.getDetailsById.invalidate(
+        { courseId },
+        {
+          type: "all",
+        }
+      );
     },
   });
 }

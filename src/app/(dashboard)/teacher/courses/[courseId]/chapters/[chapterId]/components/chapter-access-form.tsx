@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/use-toast";
 
-import type { Chapter } from "@/server/db/schema";
+import { api } from "@/trpc/react";
 
 import { cn } from "@/lib/utils";
 
@@ -29,20 +29,24 @@ const schema = z.object({
 });
 
 export default function ChapterAccessForm({
-  initialData: {
-    chapter: { id, isFree },
-    courseId,
-  },
+  initialData: { chapterId, courseId },
 }: {
-  initialData: { chapter: Chapter; courseId: string };
+  initialData: { chapterId: string; courseId: string };
 }) {
   const [editing, setEditing] = useState<boolean>(false);
-  const { data, mutateAsync: updateChapter } = useUpdateChapter({ id });
+  const { mutateAsync: updateChapter } = useUpdateChapter({
+    chapterId,
+    courseId,
+  });
+  const [chapter] = api.chapter.getById.useSuspenseQuery({
+    chapterId,
+    courseId,
+  });
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
-      isFree: data?.isFree ?? isFree ?? false,
+      isFree: !!chapter?.isFree,
     },
   });
   const { isValid, isSubmitting } = form.formState;
@@ -51,7 +55,7 @@ export default function ChapterAccessForm({
     try {
       await updateChapter({
         chapter: {
-          id,
+          id: chapterId,
           isFree: values.isFree,
         },
         courseId,
@@ -127,10 +131,10 @@ export default function ChapterAccessForm({
           <p
             className={cn(
               "mt-2 text-sm text-sky-700",
-              !isFree && !data?.isFree && "italic text-slate-500"
+              !chapter?.isFree && "italic text-slate-500"
             )}
           >
-            {(data?.isFree ?? isFree)
+            {!!chapter?.isFree
               ? "This chapter is free for preview"
               : "This chapter is not free"}
           </p>

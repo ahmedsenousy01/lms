@@ -20,7 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 
-import type { Chapter, Course } from "@/server/db/schema";
+import { api } from "@/trpc/react";
 
 import { useCreateChapter } from "../queries/use-create-chapter";
 import ChaptersList from "./chapters-list";
@@ -29,18 +29,11 @@ const schema = z.object({
   title: z.string().min(1, { message: "chapter title is required" }),
 });
 
-export default function ChaptersForm({
-  initialData: { id, courseChapters },
-}: {
-  initialData: Course & {
-    courseChapters: Chapter[];
-  };
-}) {
+export default function ChaptersForm({ courseId }: { courseId: string }) {
   const router = useRouter();
   const [creating, setCreating] = useState<boolean>(false);
-  const { data, mutateAsync: createChapter } = useCreateChapter({ id });
-
-  courseChapters = data ? [...courseChapters, data] : [...courseChapters];
+  const { mutateAsync: createChapter } = useCreateChapter({ courseId });
+  const [course] = api.course.getDetailsById.useSuspenseQuery({ courseId });
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -53,7 +46,7 @@ export default function ChaptersForm({
   async function handleSubmit(values: z.infer<typeof schema>) {
     try {
       await createChapter({
-        courseId: id,
+        courseId,
         title: values.title,
       });
       setCreating(false);
@@ -71,7 +64,7 @@ export default function ChaptersForm({
     }
   }
 
-  const hasChapters = courseChapters.length > 0;
+  const hasChapters = course?.courseChapters.length > 0;
 
   return (
     <div className="mt-6 rounded-md border bg-slate-100 p-4">
@@ -127,8 +120,8 @@ export default function ChaptersForm({
             <div className="relative">
               <div className="max-h-52 space-y-4 overflow-y-auto">
                 <ChaptersList
-                  chapters={[...courseChapters]}
-                  courseId={id}
+                  chapters={course?.courseChapters}
+                  courseId={courseId}
                 />
               </div>
             </div>

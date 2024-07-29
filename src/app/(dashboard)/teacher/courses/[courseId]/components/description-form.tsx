@@ -18,7 +18,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 
-import type { Course } from "@/server/db/schema";
+import { api } from "@/trpc/react";
 
 import { cn } from "@/lib/utils";
 
@@ -28,18 +28,15 @@ const schema = z.object({
   description: z.string().min(1, { message: "Description is required" }),
 });
 
-export default function DescriptionForm({
-  initialData: { id, description },
-}: {
-  initialData: Course;
-}) {
+export default function DescriptionForm({ courseId }: { courseId: string }) {
   const [editing, setEditing] = useState<boolean>(false);
-  const { data, mutateAsync: updateCourse } = useUpdateCourse({ id });
+  const [course] = api.course.getDetailsById.useSuspenseQuery({ courseId });
+  const { mutateAsync: updateCourse } = useUpdateCourse({ courseId });
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
-      description: data?.description ?? description ?? "",
+      description: course?.description ?? undefined,
     },
   });
   const { isValid, isSubmitting } = form.formState;
@@ -47,7 +44,7 @@ export default function DescriptionForm({
   async function handleSubmit(values: z.infer<typeof schema>) {
     try {
       await updateCourse({
-        id,
+        id: courseId,
         description: values.description,
       });
       setEditing(false);
@@ -116,10 +113,10 @@ export default function DescriptionForm({
           <p
             className={cn(
               "mt-2 text-sm",
-              !description && !data?.description && "italic text-slate-500"
+              !course?.description && "italic text-slate-500"
             )}
           >
-            {data?.description ?? description ?? "No description"}
+            {course?.description ?? "No description"}
           </p>
         </>
       )}

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { FileUploader } from "@/components/ui/file-uploader";
 import { toast } from "@/components/ui/use-toast";
 
-import type { Chapter } from "@/server/db/schema";
+import { api } from "@/trpc/react";
 
 import { useUpdateChapter } from "../queries/use-update-chapter";
 
@@ -19,21 +19,25 @@ const schema = z.object({
 });
 
 export default function ChapterVideoForm({
-  initialData: {
-    chapter: { id, videoUrl, muxPlaybackId },
-    courseId,
-  },
+  initialData: { chapterId, courseId },
 }: {
-  initialData: { chapter: Chapter; courseId: string };
+  initialData: { chapterId: string; courseId: string };
 }) {
   const [editing, setEditing] = useState<boolean>(false);
-  const { data, mutateAsync: updateChapter } = useUpdateChapter({ id });
+  const { mutateAsync: updateChapter } = useUpdateChapter({
+    chapterId,
+    courseId,
+  });
+  const [chapter] = api.chapter.getById.useSuspenseQuery({
+    chapterId,
+    courseId,
+  });
 
   async function handleSubmit(values: z.infer<typeof schema>) {
     try {
       await updateChapter({
         chapter: {
-          id,
+          id: chapterId,
           videoUrl: values.videoUrl,
         },
         courseId,
@@ -61,7 +65,7 @@ export default function ChapterVideoForm({
         >
           {editing ? (
             "Cancel"
-          ) : (videoUrl ?? data?.videoUrl) ? (
+          ) : chapter?.videoUrl ? (
             <>
               <Pencil className="mr-2 size-4" />
               Edit video
@@ -86,12 +90,12 @@ export default function ChapterVideoForm({
             Upload this chapter&apos;s video
           </div>
         </>
-      ) : (videoUrl ?? data?.videoUrl) ? (
+      ) : chapter?.videoUrl ? (
         <>
           <div className="relative mt-2 aspect-video">
             <MuxPlayer
               streamType="on-demand"
-              playbackId={data?.muxPlaybackId ?? muxPlaybackId ?? ""}
+              playbackId={chapter?.muxPlaybackId ?? ""}
             />
             <p className="text-sm text-muted-foreground">
               Videos can take a few minutes to process. Refresh the page if the

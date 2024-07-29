@@ -2,18 +2,18 @@ import { toast } from "@/components/ui/use-toast";
 
 import { api } from "@/trpc/react";
 
-export function useDeleteAttachment({ courseId }: { courseId: string }) {
+export function useDeleteCourse() {
   const utils = api.useUtils();
-  return api.attachment.delete.useMutation({
+  return api.course.delete.useMutation({
     onError: error => {
       toast({
-        title: "Error deleting attachment",
+        title: "Error deleting course",
         description: error.message ?? "Something went wrong",
         variant: "destructive",
       });
     },
     onSettled: async () => {
-      await utils.course.getDetailsById.invalidate({ courseId });
+      await utils.course.getAllHeadlines.invalidate();
     },
   });
 }

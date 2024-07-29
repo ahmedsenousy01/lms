@@ -19,7 +19,7 @@ import Editor from "@/components/ui/react-quill/editor";
 import Preview from "@/components/ui/react-quill/preview";
 import { toast } from "@/components/ui/use-toast";
 
-import type { Chapter } from "@/server/db/schema";
+import { api } from "@/trpc/react";
 
 import { cn } from "@/lib/utils";
 
@@ -30,20 +30,24 @@ const schema = z.object({
 });
 
 export default function ChapterDescriptionForm({
-  initialData: {
-    chapter: { id, description },
-    courseId,
-  },
+  initialData: { chapterId, courseId },
 }: {
-  initialData: { chapter: Chapter; courseId: string };
+  initialData: { chapterId: string; courseId: string };
 }) {
   const [editing, setEditing] = useState<boolean>(false);
-  const { data, mutateAsync: updateChapter } = useUpdateChapter({ id });
+  const { mutateAsync: updateChapter } = useUpdateChapter({
+    chapterId,
+    courseId,
+  });
+  const [chapter] = api.chapter.getById.useSuspenseQuery({
+    chapterId,
+    courseId,
+  });
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
-      description: data?.description ?? description ?? "",
+      description: chapter?.description ?? undefined,
     },
   });
   const { isValid, isSubmitting } = form.formState;
@@ -52,16 +56,12 @@ export default function ChapterDescriptionForm({
     try {
       await updateChapter({
         chapter: {
-          id,
+          id: chapterId,
           description: values.description,
         },
         courseId,
       });
       setEditing(false);
-      toast({
-        description: "description updated",
-        variant: "success",
-      });
     } catch (error) {
       toast({
         description: "Error editing chapter",
@@ -123,11 +123,11 @@ export default function ChapterDescriptionForm({
           <div
             className={cn(
               "mt-2 text-sm",
-              !description && !data?.description && "italic text-slate-500"
+              !chapter?.description && "italic text-slate-500"
             )}
           >
-            {(data?.description ?? description) ? (
-              <Preview value={data?.description ?? description ?? ""} />
+            {chapter?.description ? (
+              <Preview value={chapter?.description ?? ""} />
             ) : (
               "No description"
             )}

@@ -18,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 
-import type { Chapter } from "@/server/db/schema";
+import { api } from "@/trpc/react";
 
 import { useUpdateChapter } from "../queries/use-update-chapter";
 
@@ -27,20 +27,24 @@ const schema = z.object({
 });
 
 export default function ChapterTitleForm({
-  initialData: {
-    chapter: { id, title },
-    courseId,
-  },
+  initialData: { chapterId, courseId },
 }: {
-  initialData: { chapter: Chapter; courseId: string };
+  initialData: { chapterId: string; courseId: string };
 }) {
   const [editing, setEditing] = useState<boolean>(false);
-  const { data, mutateAsync: updateChapter } = useUpdateChapter({ id });
+  const { mutateAsync: updateChapter } = useUpdateChapter({
+    chapterId,
+    courseId,
+  });
+  const [chapter] = api.chapter.getById.useSuspenseQuery({
+    chapterId,
+    courseId,
+  });
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
-      title: data?.title ?? title,
+      title: chapter?.title,
     },
   });
   const { isValid, isSubmitting } = form.formState;
@@ -49,16 +53,12 @@ export default function ChapterTitleForm({
     try {
       await updateChapter({
         chapter: {
-          id,
+          id: chapterId,
           title: values.title,
         },
         courseId,
       });
       setEditing(false);
-      toast({
-        title: "Title updated",
-        variant: "success",
-      });
     } catch (error) {
       toast({
         title: "Error editing course",
@@ -117,7 +117,7 @@ export default function ChapterTitleForm({
         </Form>
       ) : (
         <>
-          <p className="mt-2 text-sm">{data?.title ?? title}</p>
+          <p className="mt-2 text-sm">{chapter?.title}</p>
         </>
       )}
     </div>
