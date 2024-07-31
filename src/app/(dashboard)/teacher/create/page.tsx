@@ -41,7 +41,9 @@ export default function CreateCoursePage() {
 
   async function handleSubmit(values: z.infer<typeof schema>) {
     try {
-      const course = await createCourse(values);
+      const course = await createCourse({
+        title: values.title,
+      });
       toast({
         title: "Course created",
         description: "You can now start adding lessons",

@@ -28,15 +28,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
+import { useCurrentUser } from "@/server/auth";
+import { type Course } from "@/server/db/schema";
+import { api } from "@/trpc/react";
+
+interface DataTableProps {
+  columns: ColumnDef<Course>[];
 }
 
-export function DataTable<TData, TValue>({
-  columns,
-  data,
-}: DataTableProps<TData, TValue>) {
+export function DataTable({ columns }: DataTableProps) {
+  const user = useCurrentUser();
+  const [data] = api.course.getByUserId.useSuspenseQuery({
+    userId: user!.id,
+  });
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []

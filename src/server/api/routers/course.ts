@@ -23,11 +23,15 @@ export const courseRouter = createTRPCRouter({
       .from(courses)
       .orderBy(courses.createdAt);
   }),
-  getDetailsById: protectedProcedure
-    .input(z.object({ courseId: z.string() }))
-    .query(async ({ ctx, input: { courseId } }) => {
-      const course = await getCourseDetailsById({
-        courseId,
+  getByUserId: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const userCourses = await ctx.db.query.courses.findMany({
+        where: eq(courses.userId, input.userId),
         with: {
           user: true,
           category: true,
@@ -35,6 +39,26 @@ export const courseRouter = createTRPCRouter({
           chapters: true,
         },
       });
+
+      return userCourses;
+    }),
+  getDetailsById: protectedProcedure
+    .input(
+      z.object({
+        courseId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const course = await getCourseDetailsById({
+        courseId: input.courseId,
+        with: {
+          user: true,
+          category: true,
+          attachments: true,
+          chapters: true,
+        },
+      });
+      console.log(course);
 
       if (!course) {
         throw new TRPCError({
