@@ -11,6 +11,7 @@
 - [ ] Add validation to the backend (return 400 on invalid input)
 - [ ] Add error handling to the backend (return 500 on error)
 - [ ] Add rate limiting to the backend w/ upstash (return 429 on rate limit)
+- [ ] Use DTO and taint API
 
 ## Performance
 

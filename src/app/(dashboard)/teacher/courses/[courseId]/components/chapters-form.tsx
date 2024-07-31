@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 
-import { useRouter } from "next/navigation";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -20,9 +18,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 
-import { api } from "@/trpc/react";
-
 import { useCreateChapter } from "../queries/use-create-chapter";
+import { useGetCourseDetails } from "../queries/use-get-course-details";
 import ChaptersList from "./chapters-list";
 
 const schema = z.object({
@@ -30,10 +27,9 @@ const schema = z.object({
 });
 
 export default function ChaptersForm({ courseId }: { courseId: string }) {
-  const router = useRouter();
   const [creating, setCreating] = useState<boolean>(false);
   const { mutateAsync: createChapter } = useCreateChapter({ courseId });
-  const [course] = api.course.getDetailsById.useSuspenseQuery({ courseId });
+  const { data: course } = useGetCourseDetails({ courseId });
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -59,12 +55,10 @@ export default function ChaptersForm({ courseId }: { courseId: string }) {
         description: "Error creating chapter",
         variant: "destructive",
       });
-    } finally {
-      router.refresh();
     }
   }
 
-  const hasChapters = course?.courseChapters.length > 0;
+  const hasChapters = course!.chapters.length > 0;
 
   return (
     <div className="mt-6 rounded-md border bg-slate-100 p-4">
@@ -120,7 +114,7 @@ export default function ChaptersForm({ courseId }: { courseId: string }) {
             <div className="relative">
               <div className="max-h-52 space-y-4 overflow-y-auto">
                 <ChaptersList
-                  chapters={course?.courseChapters}
+                  chapters={course?.chapters ?? []}
                   courseId={courseId}
                 />
               </div>

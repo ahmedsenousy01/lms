@@ -1,4 +1,5 @@
 import { type Metadata } from "next";
+import { ErrorBoundary } from "next/dist/client/components/error-boundary";
 
 import { env } from "@/env";
 import "@/styles/globals.css";
@@ -27,15 +28,17 @@ export default async function RootLayout({
       className={`${GeistSans.variable}`}
     >
       <body>
-        <AuthSessionProvider session={session}>
-          <TRPCReactProvider>
-            {children}
-            {env.NODE_ENV !== "production" && (
-              <ReactQueryDevtools initialIsOpen={false} />
-            )}
-          </TRPCReactProvider>
-        </AuthSessionProvider>
-        <Toaster />
+        <ErrorBoundary errorComponent={undefined}>
+          <AuthSessionProvider session={session}>
+            <TRPCReactProvider>
+              {children}
+              {env.NODE_ENV !== "production" && (
+                <ReactQueryDevtools initialIsOpen={false} />
+              )}
+            </TRPCReactProvider>
+          </AuthSessionProvider>
+          <Toaster />
+        </ErrorBoundary>
       </body>
     </html>
   );

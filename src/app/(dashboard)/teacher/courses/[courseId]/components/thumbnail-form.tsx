@@ -11,8 +11,7 @@ import { Button } from "@/components/ui/button";
 import { FileUploader } from "@/components/ui/file-uploader";
 import { toast } from "@/components/ui/use-toast";
 
-import { api } from "@/trpc/react";
-
+import { useGetCourseDetails } from "../queries/use-get-course-details";
 import { useUpdateCourse } from "../queries/use-update-course";
 
 const schema = z.object({
@@ -21,7 +20,7 @@ const schema = z.object({
 
 export default function ThumbnailForm({ courseId }: { courseId: string }) {
   const [editing, setEditing] = useState<boolean>(false);
-  const [course] = api.course.getDetailsById.useSuspenseQuery({ courseId });
+  const { data: course } = useGetCourseDetails({ courseId });
   const { mutateAsync: updateCourse } = useUpdateCourse({ courseId });
 
   async function handleSubmit(values: z.infer<typeof schema>) {

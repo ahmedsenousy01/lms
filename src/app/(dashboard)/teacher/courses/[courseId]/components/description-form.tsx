@@ -18,11 +18,10 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 
-import { api } from "@/trpc/react";
-
 import { cn } from "@/lib/utils";
 
 import { useUpdateCourse } from "../queries/use-update-course";
+import { useGetCourseDetails } from "../queries/use-get-course-details";
 
 const schema = z.object({
   description: z.string().min(1, { message: "Description is required" }),
@@ -30,7 +29,7 @@ const schema = z.object({
 
 export default function DescriptionForm({ courseId }: { courseId: string }) {
   const [editing, setEditing] = useState<boolean>(false);
-  const [course] = api.course.getDetailsById.useSuspenseQuery({ courseId });
+  const { data: course } = useGetCourseDetails({ courseId });
   const { mutateAsync: updateCourse } = useUpdateCourse({ courseId });
 
   const form = useForm<z.infer<typeof schema>>({

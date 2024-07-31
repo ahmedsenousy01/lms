@@ -24,8 +24,8 @@ export function CompletionIndecator({
       course.description,
       course.imageUrl,
       course.price,
-      course.categoryId,
-      course.courseChapters.some(chapter => chapter.isPublished),
+      course.category?.id,
+      course.chapters.some(chapter => chapter.isPublished),
     ];
     const totalFields = requiredFields.length;
     const completedFields = requiredFields.filter(Boolean).length;

@@ -18,10 +18,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 
-import { api } from "@/trpc/react";
-
 import { cn, formatPrice } from "@/lib/utils";
 
+import { useGetCourseDetails } from "../queries/use-get-course-details";
 import { useUpdateCourse } from "../queries/use-update-course";
 
 const schema = z.object({
@@ -31,7 +30,7 @@ const schema = z.object({
 export default function PriceForm({ courseId }: { courseId: string }) {
   const [editing, setEditing] = useState<boolean>(false);
   const { mutateAsync: updateCourse } = useUpdateCourse({ courseId });
-  const [course] = api.course.getDetailsById.useSuspenseQuery({ courseId });
+  const { data: course } = useGetCourseDetails({ courseId });
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),

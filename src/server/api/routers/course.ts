@@ -7,7 +7,9 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
-import { attachments, chapters, courses } from "@/server/db/schema";
+import { courses } from "@/server/db/schema";
+
+import { getCourseDetailsById } from "../data-access/course";
 
 export const courseRouter = createTRPCRouter({
   getAllHeadlines: publicProcedure.query(async ({ ctx }) => {
@@ -24,13 +26,15 @@ export const courseRouter = createTRPCRouter({
   getDetailsById: protectedProcedure
     .input(z.object({ courseId: z.string() }))
     .query(async ({ ctx, input: { courseId } }) => {
-      // Fetch the course and its attachments
-      const [course] = await ctx.db
-        .select()
-        .from(courses)
-        .where(eq(courses.id, courseId))
-        .limit(1)
-        .execute();
+      const course = await getCourseDetailsById({
+        courseId,
+        with: {
+          user: true,
+          category: true,
+          attachments: true,
+          chapters: true,
+        },
+      });
 
       if (!course) {
         throw new TRPCError({
@@ -39,31 +43,14 @@ export const courseRouter = createTRPCRouter({
         });
       }
 
-      if (course?.userId !== ctx.session.user.id) {
+      if (course.user.id !== ctx.session.user.id) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "You are not authorized to access this course",
         });
       }
 
-      const courseAttachments = await ctx.db
-        .select()
-        .from(attachments)
-        .where(eq(attachments.courseId, course.id))
-        .execute();
-
-      const courseChapters = await ctx.db
-        .select()
-        .from(chapters)
-        .where(eq(chapters.courseId, course.id))
-        .orderBy(chapters.position)
-        .execute();
-
-      return {
-        ...course,
-        courseAttachments,
-        courseChapters,
-      };
+      return course;
     }),
   create: protectedProcedure
     .input(z.object({ title: z.string().min(1) }))

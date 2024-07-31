@@ -1,13 +1,24 @@
-import Link from "next/link";
+import { getUserCourses } from "@/server/api/data-access/course";
+import { getCurrentUser } from "@/server/auth";
 
-import { Button } from "@/components/ui/button";
+import { columns } from "./components/columns";
+import { DataTable } from "./components/data-table";
 
-export default function CoursesPage() {
+export default async function CoursesPage() {
+  const user = await getCurrentUser();
+  const myCourses = await getUserCourses({
+    userId: user!.id,
+    with: {
+      category: true,
+    },
+  });
+
   return (
-    <div className="flex h-full items-center justify-center">
-      <Link href="/teacher/create">
-        <Button>New Course</Button>
-      </Link>
+    <div className="h-full p-6">
+      <DataTable
+        data={myCourses}
+        columns={columns}
+      />
     </div>
   );
 }

@@ -22,6 +22,7 @@ import { api } from "@/trpc/react";
 
 import { cn } from "@/lib/utils";
 
+import { useGetCourseDetails } from "../queries/use-get-course-details";
 import { useUpdateCourse } from "../queries/use-update-course";
 
 const schema = z.object({
@@ -31,7 +32,7 @@ const schema = z.object({
 export default function CategoryForm({ courseId }: { courseId: string }) {
   const [editing, setEditing] = useState<boolean>(false);
   const { mutateAsync: updateCourse } = useUpdateCourse({ courseId });
-  const [course] = api.course.getDetailsById.useSuspenseQuery({ courseId });
+  const { data: course } = useGetCourseDetails({ courseId });
   const [categories] = api.category.getAll.useSuspenseQuery();
   const options = categories.map(category => ({
     label: category.name,
@@ -41,7 +42,7 @@ export default function CategoryForm({ courseId }: { courseId: string }) {
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
-      categoryId: course?.categoryId ?? undefined,
+      categoryId: course!.category?.id ?? undefined,
     },
   });
   const { isValid, isSubmitting } = form.formState;
@@ -66,7 +67,7 @@ export default function CategoryForm({ courseId }: { courseId: string }) {
   }
 
   const selectedOption = options.find(
-    option => option.value === course?.categoryId
+    option => option.value === course!.category?.id
   );
 
   return (
@@ -121,7 +122,9 @@ export default function CategoryForm({ courseId }: { courseId: string }) {
           <p
             className={cn(
               "mt-2 text-sm",
-              !course?.categoryId && !selectedOption && "italic text-slate-500"
+              !course!.category?.id &&
+                !selectedOption &&
+                "italic text-slate-500"
             )}
           >
             {selectedOption?.label ?? "No category"}

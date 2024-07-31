@@ -23,17 +23,18 @@ export function CourseActions({
   const router = useRouter();
   const { mutateAsync: deleteCourse } = useDeleteCourse();
   const { mutateAsync: updateCourse } = useUpdateCourse({ courseId });
-
-  const [course] = api.course.getDetailsById.useSuspenseQuery({ courseId });
+  const [course] = api.course.getDetailsById.useSuspenseQuery({
+    courseId,
+  });
 
   useEffect(() => {
     const requiredFields = [
       course.title,
       course.description,
       course.imageUrl,
-      course.categoryId,
+      course.category?.id,
       course.price,
-      course.courseChapters.some(chapter => chapter.isPublished),
+      course.chapters.some(chapter => chapter.isPublished),
     ];
     const totalFields = requiredFields.length;
     const completedFields = requiredFields.filter(Boolean).length;
@@ -43,9 +44,9 @@ export function CourseActions({
     course.description,
     course.title,
     course.imageUrl,
-    course.categoryId,
+    course.category?.id,
     course.price,
-    course.courseChapters,
+    course.chapters,
   ]);
 
   return (
