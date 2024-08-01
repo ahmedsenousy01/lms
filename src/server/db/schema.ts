@@ -120,6 +120,7 @@ export const coursesRelations = relations(courses, ({ one, many }) => ({
   }),
   attachments: many(attachments),
   chapters: many(chapters),
+  purchases: many(purchases),
 }));
 
 export const categories = createTable(

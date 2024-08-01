@@ -10,6 +10,7 @@ import {
 import { courses } from "@/server/db/schema";
 
 import { getCourseDetailsById } from "../data-access/course";
+import { getCoursesUseCase } from "../use-cases/course";
 
 export const courseRouter = createTRPCRouter({
   getAllHeadlines: publicProcedure.query(async ({ ctx }) => {
@@ -23,6 +24,19 @@ export const courseRouter = createTRPCRouter({
       .from(courses)
       .orderBy(courses.createdAt);
   }),
+  browse: protectedProcedure
+    .input(
+      z.object({
+        title: z.string().optional(),
+        categoryId: z.string().optional(),
+      })
+    )
+    .query(async ({ input: { title, categoryId } }) => {
+      return await getCoursesUseCase({
+        title,
+        categoryId,
+      });
+    }),
   getByUserId: protectedProcedure
     .input(
       z.object({

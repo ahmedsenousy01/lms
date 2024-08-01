@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 import { db } from "@/server/db";
 import { courses } from "@/server/db/schema";
@@ -33,6 +33,16 @@ export async function getCourseDetailsById(input: {
     where: eq(courses.id, input.courseId),
     with: {
       ...input.with,
+    },
+  });
+}
+
+export async function getCourses({ query }: { query: string }) {
+  return await db.query.courses.findMany({
+    where: sql`to_tsvector('english', ${courses.title}) @@ to_tsquery(${query})`,
+    orderBy: courses.createdAt,
+    with: {
+      category: true,
     },
   });
 }

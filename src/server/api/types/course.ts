@@ -41,3 +41,32 @@ export type FullCourseDto = {
     updatedAt: Date | null;
   }[];
 };
+
+export type CourseWithCategoryWithUserProgress = {
+  id: string;
+  description: string | null;
+  userId: string;
+  title: string;
+  imageUrl: string | null;
+  price: number | null;
+  isPublished: boolean | null;
+  createdAt: Date;
+  updatedAt: Date | null;
+  categoryId: string | null;
+  category: {
+    id: string;
+    name: string;
+    createdAt: Date;
+    updatedAt: Date | null;
+  } | null;
+  chapters: {
+    id: string;
+  }[];
+  purchases: {
+    id: string;
+    courseId: string;
+    createdAt: Date;
+    updatedAt: Date | null;
+  }[];
+  progress: number | null;
+};
