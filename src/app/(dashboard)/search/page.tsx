@@ -1,20 +1,15 @@
-import Link from "next/link";
+import { api, HydrateClient } from "@/trpc/server";
 
-import { api } from "@/trpc/server";
+import { Categories } from "./components/categories";
 
 export default async function SearchPage() {
-  const courses = await api.course.getAllHeadlines();
+  void api.category.getAll.prefetch();
+
   return (
-    <div className="grid content-center justify-center gap-4">
-      {courses.map(course => (
-        <Link
-          href={`/teacher/courses/${course.id}`}
-          className="rounded-md border border-gray-200 p-6 shadow-md"
-          key={course.id}
-        >
-          {course.title}
-        </Link>
-      ))}
-    </div>
+    <HydrateClient>
+      <div className="px-2 py-6 sm:px-6">
+        <Categories />
+      </div>
+    </HydrateClient>
   );
 }
