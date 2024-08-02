@@ -7,7 +7,7 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
-import { courses } from "@/server/db/schema";
+import { courses, purchases } from "@/server/db/schema";
 
 import { getCourseDetailsById } from "../data-access/course";
 import { getCoursesUseCase } from "../use-cases/course";
@@ -72,7 +72,6 @@ export const courseRouter = createTRPCRouter({
           chapters: true,
         },
       });
-      console.log(course);
 
       if (!course) {
         throw new TRPCError({
@@ -81,7 +80,8 @@ export const courseRouter = createTRPCRouter({
         });
       }
 
-      if (course.user.id !== ctx.session.user.id) {
+      if (course.user?.id !== ctx.session.user.id) {
+        console.log("ahmed");
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "You are not authorized to access this course",
@@ -89,6 +89,44 @@ export const courseRouter = createTRPCRouter({
       }
 
       return course;
+    }),
+  watch: protectedProcedure
+    .input(z.object({ courseId: z.string() }))
+    .query(async ({ input }) => {
+      const course = await getCourseDetailsById({
+        courseId: input.courseId,
+        with: {
+          user: true,
+          category: true,
+          attachments: true,
+          chapters: true,
+        },
+      });
+
+      if (!course) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Course not found",
+        });
+      }
+
+      return course;
+    }),
+  checkForCoursePurchase: protectedProcedure
+    .input(
+      z.object({
+        courseId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input: { courseId } }) => {
+      return (
+        (await ctx.db.query.purchases.findFirst({
+          where: and(
+            eq(purchases.courseId, courseId),
+            eq(purchases.userId, ctx.session.user.id)
+          ),
+        })) ?? null
+      );
     }),
   create: protectedProcedure
     .input(z.object({ title: z.string().min(1) }))
