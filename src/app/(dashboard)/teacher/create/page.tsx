@@ -20,7 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 
-import { useCreateCourse } from "./use-create-course";
+import { useCreateCourse } from "./_queries/use-create-course";
 
 const schema = z.object({
   title: z.string().min(1, { message: "Title is required" }),

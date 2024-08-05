@@ -5,7 +5,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
-import { chapters, courses } from "@/server/db/schema";
+import { chapters, courses, userProgress } from "@/server/db/schema";
 
 import { unpublishCourseIfNoPublishedChapters } from "../use-cases/course";
 
@@ -23,16 +23,15 @@ export const chapterRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-      const [chapter] = await ctx.db
-        .select()
-        .from(chapters)
-        .where(
-          and(
-            eq(chapters.id, input.chapterId),
-            eq(chapters.courseId, input.courseId)
-          )
-        )
-        .limit(1);
+      const chapter = await ctx.db.query.chapters.findFirst({
+        where: and(
+          eq(chapters.id, input.chapterId),
+          eq(chapters.courseId, input.courseId)
+        ),
+        with: {
+          userProgress: true
+        },
+      });
 
       if (!chapter) {
         throw new TRPCError({
@@ -61,6 +60,21 @@ export const chapterRouter = createTRPCRouter({
         .from(chapters)
         .where(eq(chapters.courseId, input.courseId))
         .orderBy(chapters.position);
+    }),
+  getChapterProgress: protectedProcedure
+    .input(
+      z.object({
+        chapterId: z.string(),
+        courseId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.query.userProgress.findFirst({
+        where: and(
+          eq(userProgress.chapterId, input.chapterId),
+          eq(userProgress.userId, ctx.session.user.id)
+        ),
+      });
     }),
   create: protectedProcedure
     .input(
@@ -190,7 +204,11 @@ export const chapterRouter = createTRPCRouter({
         // If the chapter has a video, delete the existing Mux asset and create a new one
         if (input.chapter.videoUrl) {
           if (chapter.muxAssetId) {
-            await video.assets.delete(chapter.muxAssetId);
+            try {
+              void video.assets.delete(chapter.muxAssetId);
+            } catch {
+              console.log("no asset to delete");
+            }
           }
 
           const asset = await video.assets.create({
@@ -223,6 +241,7 @@ export const chapterRouter = createTRPCRouter({
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Error updating chapter",
+          cause: error,
         });
       }
     }),

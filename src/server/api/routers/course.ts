@@ -81,7 +81,6 @@ export const courseRouter = createTRPCRouter({
       }
 
       if (course.user?.id !== ctx.session.user.id) {
-        console.log("ahmed");
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "You are not authorized to access this course",

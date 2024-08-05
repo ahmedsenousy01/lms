@@ -6,9 +6,10 @@ import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
-import { loginSchema } from "@/schema/auth";
+import { loginSchema } from "@/schemas/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { FcGoogle } from "react-icons/fc";
 import type * as z from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -149,7 +150,7 @@ export default function LoginPage() {
           </Form>
           <Button
             variant="outline"
-            className="mt-2 w-full"
+            className="mt-2 flex w-full items-center gap-x-2"
             onClick={async () =>
               await signIn("google", {
                 redirectTo: DEFAULT_REDIRECT_ROUTE,
@@ -157,6 +158,7 @@ export default function LoginPage() {
               })
             }
           >
+            <FcGoogle />
             Login with Google
           </Button>
           <div className="mt-4 text-center text-sm">

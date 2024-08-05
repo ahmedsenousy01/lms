@@ -1,8 +1,8 @@
 import { api, HydrateClient } from "@/trpc/server";
 
-import { SearchInput } from "../_navbar/search-input";
-import { Categories } from "./components/categories";
-import { CoursesList } from "./components/courses-list";
+import { SearchInput } from "../../_components/navbar/search-input";
+import { Categories } from "./_components/categories";
+import { CoursesList } from "./_components/courses-list";
 
 export default async function SearchPage({
   params: { categoryId, title },

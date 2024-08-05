@@ -8,13 +8,13 @@ import { IconBadge } from "@/components/ui/icon-badge";
 
 import { api, HydrateClient } from "@/trpc/server";
 
-import { CompletionIndecator } from "../../components/completion-indecator";
-import { PublishStatusBanner } from "../../components/publish-status-banner";
-import ChapterAccessForm from "./components/chapter-access-form";
-import { ChapterActions } from "./components/chapter-actions";
-import ChapterDescriptionForm from "./components/chapter-description-form";
-import ChapterTitleForm from "./components/chapter-title-form";
-import ChapterVideoForm from "./components/chapter-video-form";
+import { CompletionIndecator } from "../../_components/completion-indecator";
+import { PublishStatusBanner } from "../../_components/publish-status-banner";
+import ChapterAccessForm from "./_components/chapter-access-form";
+import { ChapterActions } from "./_components/chapter-actions";
+import ChapterDescriptionForm from "./_components/chapter-description-form";
+import ChapterTitleForm from "./_components/chapter-title-form";
+import ChapterVideoForm from "./_components/chapter-video-form";
 
 export default async function CourseChapterPage({
   params: { courseId, chapterId },

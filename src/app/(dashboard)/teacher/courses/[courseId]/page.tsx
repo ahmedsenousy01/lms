@@ -11,16 +11,16 @@ import { IconBadge } from "@/components/ui/icon-badge";
 
 import { api, HydrateClient } from "@/trpc/server";
 
-import AttachmentsForm from "./components/attachments-form";
-import CategoryForm from "./components/category-form";
-import ChaptersForm from "./components/chapters-form";
-import { CompletionIndecator } from "./components/completion-indecator";
-import { CourseActions } from "./components/course-actions";
-import DescriptionForm from "./components/description-form";
-import PriceForm from "./components/price-form";
-import { PublishStatusBanner } from "./components/publish-status-banner";
-import ThumbnailForm from "./components/thumbnail-form";
-import TitleForm from "./components/title-form";
+import AttachmentsForm from "./_components/attachments-form";
+import CategoryForm from "./_components/category-form";
+import ChaptersForm from "./_components/chapters-form";
+import { CompletionIndecator } from "./_components/completion-indecator";
+import { CourseActions } from "./_components/course-actions";
+import DescriptionForm from "./_components/description-form";
+import PriceForm from "./_components/price-form";
+import { PublishStatusBanner } from "./_components/publish-status-banner";
+import ThumbnailForm from "./_components/thumbnail-form";
+import TitleForm from "./_components/title-form";
 
 export default async function CoursesPage({
   params: { courseId },

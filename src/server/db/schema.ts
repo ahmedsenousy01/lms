@@ -1,6 +1,6 @@
 import { type AdapterAccount } from "next-auth/adapters";
 
-import { type InferSelectModel, relations, sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -34,14 +34,22 @@ export const users = createTable("user", {
   }).default(sql`CURRENT_TIMESTAMP`),
   password: varchar("password", { length: 255 }),
   image: varchar("image", { length: 255 }),
+  stripeCustomerId: varchar("customer_id", { length: 255 }),
 });
 
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
   courses: many(courses),
+  purchases: many(purchases),
 }));
 
-export type DbUser = InferSelectModel<typeof users>;
+export type InsertUser = typeof users.$inferInsert;
+export type SelectUser = typeof users.$inferSelect;
+export type SelectUserWithRelations = typeof users.$inferSelect & {
+  accounts?: SelectAccount[] | null;
+  courses?: SelectCourse[] | null;
+  purchases?: SelectPurchase[] | null;
+};
 
 export const accounts = createTable(
   "account",
@@ -76,6 +84,12 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
   user: one(users, { fields: [accounts.userId], references: [users.id] }),
 }));
 
+export type InsertAccount = typeof accounts.$inferInsert;
+export type SelectAccount = typeof accounts.$inferSelect;
+export type SelectAccountWithRelations = typeof accounts.$inferSelect & {
+  user?: SelectUser | null;
+};
+
 export const courses = createTable(
   "course",
   {
@@ -107,7 +121,15 @@ export const courses = createTable(
   })
 );
 
-export type Course = InferSelectModel<typeof courses>;
+export type InsertCourse = typeof courses.$inferInsert;
+export type SelectCourse = typeof courses.$inferSelect;
+export type SelectCourseWithRelations = typeof courses.$inferSelect & {
+  user?: SelectUser | null;
+  category?: SelectCategory | null;
+  attachments?: SelectAttachment[] | null;
+  chapters?: SelectChapterWithRelations[] | null;
+  purchases?: SelectPurchase[] | null;
+};
 
 export const coursesRelations = relations(courses, ({ one, many }) => ({
   user: one(users, {
@@ -147,7 +169,11 @@ export const categoriesRelations = relations(categories, ({ many }) => ({
   courses: many(courses),
 }));
 
-export type Category = InferSelectModel<typeof categories>;
+export type InsertCategory = typeof categories.$inferInsert;
+export type SelectCategory = typeof categories.$inferSelect;
+export type SelectCategoryWithRelations = typeof categories.$inferSelect & {
+  courses?: SelectCourse[] | null;
+};
 
 export const attachments = createTable(
   "attachment",
@@ -180,7 +206,11 @@ export const attachmentsRelations = relations(attachments, ({ one }) => ({
   }),
 }));
 
-export type Attachment = InferSelectModel<typeof attachments>;
+export type InsertAttachment = typeof attachments.$inferInsert;
+export type SelectAttachment = typeof attachments.$inferSelect;
+export type SelectAttachmentWithRelations = typeof attachments.$inferSelect & {
+  course?: SelectCourse | null;
+};
 
 export const chapters = createTable(
   "chapter",
@@ -213,14 +243,20 @@ export const chapters = createTable(
   })
 );
 
-export const chaptersRelations = relations(chapters, ({ one }) => ({
+export const chaptersRelations = relations(chapters, ({ one, many }) => ({
   course: one(courses, {
     fields: [chapters.courseId],
     references: [courses.id],
   }),
+  userProgress: many(userProgress),
 }));
 
-export type Chapter = InferSelectModel<typeof chapters>;
+export type InsertChapter = typeof chapters.$inferInsert;
+export type SelectChapter = typeof chapters.$inferSelect;
+export type SelectChapterWithRelations = SelectChapter & {
+  userProgress?: SelectUserProgress[] | null;
+  course?: SelectCourse | null;
+};
 
 export const userProgress = createTable("user_progress", {
   id: varchar("id", { length: 255 })
@@ -253,7 +289,12 @@ export const userProgressRelations = relations(userProgress, ({ one }) => ({
   }),
 }));
 
-export type UserProgress = InferSelectModel<typeof userProgress>;
+export type InsertUserProgress = typeof userProgress.$inferInsert;
+export type SelectUserProgress = typeof userProgress.$inferSelect;
+export type SelectUserProgressWithRelations = InsertUserProgress & {
+  user?: SelectUser | null;
+  chapter?: SelectChapter | null;
+};
 
 export const purchases = createTable("purchase", {
   id: varchar("id", { length: 255 })
@@ -285,33 +326,9 @@ export const purchasesRelations = relations(purchases, ({ one }) => ({
   }),
 }));
 
-export type Purchase = InferSelectModel<typeof purchases>;
-
-export const stripeCustomers = createTable("stripe_customer", {
-  id: varchar("id", { length: 255 })
-    .notNull()
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  userId: varchar("user_id", { length: 255 })
-    .notNull()
-    .references(() => users.id),
-  stripeCustomerId: varchar("customer_id", { length: 255 }),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
-    () => new Date()
-  ),
-});
-
-export const stripeCustomersRelations = relations(
-  stripeCustomers,
-  ({ one }) => ({
-    user: one(users, {
-      fields: [stripeCustomers.userId],
-      references: [users.id],
-    }),
-  })
-);
-
-export type StripeCustomer = InferSelectModel<typeof stripeCustomers>;
+export type InsertPurchase = typeof purchases.$inferInsert;
+export type SelectPurchase = typeof purchases.$inferSelect;
+export type SelectPurchaseWithRelations = InsertPurchase & {
+  user?: SelectUser | null;
+  course?: SelectCourse | null;
+};

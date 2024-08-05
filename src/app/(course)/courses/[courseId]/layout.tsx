@@ -1,8 +1,6 @@
-import { CourseNavbar } from "@/app/(course)/components/course-navbar";
-import { CourseSidebar } from "@/app/(course)/components/course-sidebar";
+import { CourseNavbar } from "@/app/(course)/_components/course-navbar";
+import { CourseSidebar } from "@/app/(course)/_components/course-sidebar";
 
-import { type FullCourseDto } from "@/server/api/types/course";
-import { type UserProgress } from "@/server/db/schema";
 import { api } from "@/trpc/server";
 
 export default async function CourseLayout({
@@ -21,17 +19,13 @@ export default async function CourseLayout({
     <main className="grid h-full md:grid-cols-[auto,1fr]">
       <aside className="hidden h-full md:flex">
         <CourseSidebar
-          course={
-            course as FullCourseDto & {
-              userProgress: UserProgress[];
-            }
-          }
+          course={course}
           purchase={purchase}
         />
       </aside>
       <div className="grid h-screen grid-rows-[auto,1fr]">
         <CourseNavbar
-          course={course as FullCourseDto & { userProgress: UserProgress[] }}
+          course={course}
           purchase={purchase}
         />
         <div className="overflow-y-auto">{children}</div>

@@ -5,7 +5,7 @@ import GoogleProvider from "next-auth/providers/google";
 import { useSession } from "next-auth/react";
 
 import { env } from "@/env";
-import { loginSchema } from "@/schema/auth";
+import { loginSchema } from "@/schemas/auth";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";

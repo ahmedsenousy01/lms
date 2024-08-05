@@ -1,4 +1,4 @@
-import { passwordSchema } from "@/schema/auth";
+import { passwordSchema } from "@/schemas/auth";
 import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";

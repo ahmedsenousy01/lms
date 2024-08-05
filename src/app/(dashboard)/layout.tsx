@@ -1,5 +1,5 @@
-import Navbar from "./_navbar/navbar";
-import Sidebar from "./_sidebar/sidebar";
+import Navbar from "../_components/navbar/navbar";
+import Sidebar from "../_components/sidebar/sidebar";
 
 export default async function DashboardLayout({
   children,
