@@ -29,11 +29,10 @@ import {
 } from "@/components/ui/table";
 
 import { useCurrentUser } from "@/server/auth";
-import { type Course } from "@/server/db/schema";
 import { api } from "@/trpc/react";
 
 interface DataTableProps {
-  columns: ColumnDef<Course>[];
+  columns: ColumnDef<unknown>[];
 }
 
 export function DataTable({ columns }: DataTableProps) {

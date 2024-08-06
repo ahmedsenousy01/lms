@@ -2,9 +2,13 @@ import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
 import { getCurrentUser } from "@/server/auth";
 import { db } from "@/server/db";
-import { chapters, courses, purchases, userProgress } from "@/server/db/schema";
-
-import { type CourseWithCategoryWithUserProgress } from "../types/course";
+import {
+  chapters,
+  courses,
+  purchases,
+  type SelectCourseWithRelationsWithProgress,
+  userProgress,
+} from "@/server/db/schema";
 
 export async function unpublishCourseIfNoPublishedChapters({
   courseId,
@@ -71,7 +75,7 @@ export async function getCoursesUseCase({
 }: {
   title?: string;
   categoryId?: string;
-}): Promise<CourseWithCategoryWithUserProgress[]> {
+}): Promise<SelectCourseWithRelationsWithProgress[]> {
   try {
     const user = await getCurrentUser();
     if (!user) throw new Error("User not found");
@@ -89,9 +93,6 @@ export async function getCoursesUseCase({
       with: {
         category: true,
         chapters: {
-          columns: {
-            id: true,
-          },
           where: eq(chapters.isPublished, true),
         },
         purchases: {

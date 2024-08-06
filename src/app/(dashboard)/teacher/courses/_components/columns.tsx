@@ -16,11 +16,11 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 
-import { type Course } from "@/server/db/schema";
+import { type SelectCourseWithRelations } from "@/server/db/schema";
 
 import { cn } from "@/lib/utils";
 
-export const columns: ColumnDef<Course>[] = [
+export const columns: ColumnDef<SelectCourseWithRelations>[] = [
   {
     accessorKey: "title",
     header: ({ column }) => {

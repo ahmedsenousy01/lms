@@ -1,3 +1,5 @@
+import { type ColumnDef } from "@tanstack/react-table";
+
 import { getCurrentUser } from "@/server/auth";
 import { api, HydrateClient } from "@/trpc/server";
 
@@ -13,7 +15,7 @@ export default async function CoursesPage() {
   return (
     <HydrateClient>
       <div className="h-full p-6">
-        <DataTable columns={columns} />
+        <DataTable columns={columns as ColumnDef<unknown>[]} />
       </div>
     </HydrateClient>
   );

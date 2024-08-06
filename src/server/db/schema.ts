@@ -130,6 +130,10 @@ export type SelectCourseWithRelations = typeof courses.$inferSelect & {
   chapters?: SelectChapterWithRelations[] | null;
   purchases?: SelectPurchase[] | null;
 };
+export type SelectCourseWithRelationsWithProgress =
+  SelectCourseWithRelations & {
+    progress?: number | null;
+  };
 
 export const coursesRelations = relations(courses, ({ one, many }) => ({
   user: one(users, {
