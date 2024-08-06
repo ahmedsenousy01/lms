@@ -28,18 +28,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { useCurrentUser } from "@/server/auth";
-import { api } from "@/trpc/react";
+import { type SelectCourseWithRelations } from "@/server/db/schema";
 
 interface DataTableProps {
-  columns: ColumnDef<unknown>[];
+  data: SelectCourseWithRelations[];
+  columns: ColumnDef<SelectCourseWithRelations>[];
 }
 
-export function DataTable({ columns }: DataTableProps) {
-  const user = useCurrentUser();
-  const [data] = api.course.getByUserId.useSuspenseQuery({
-    userId: user!.id,
-  });
+export function DataTable({ columns, data }: DataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
