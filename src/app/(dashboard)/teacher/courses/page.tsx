@@ -11,13 +11,11 @@ export default async function CoursesPage() {
   });
 
   return (
-    // <HydrateClient>
     <div className="h-full p-6">
       <DataTable
         columns={columns}
         data={courses}
       />
     </div>
-    // </HydrateClient>
   );
 }
